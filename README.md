@@ -37,7 +37,27 @@ Add a `lib` subdirectory and add the appropriate Neurotechnology libraries to it
 
 **Add keystore.jks if SSL support is needed**:
 
-If the server-side configuration expect the URL to the fingerprint service to be at HTTPS, then SSL configuration must be added to the configuration.  As a part of this, you need to generate a keystore to use as a part of the configuration
+If the server-side configuration expects the URL to the fingerprint service to be at HTTPS, then SSL configuration must be added to the configuration.  As a part of this, you need to generate a keystore to use as a part of the configuration.
+For example, from `$PIH_BIOMETRICS_HOME` run:
+
+```shell
+keytool -genkey -alias pih-biometrics -keyalg RSA -keystore keystore.jks
+```
+
+* You will be prompted to `Enter keystore password:`.  You can enter an appropriate password here.
+* You will be prompted to enter name and organizational information.  This can either be entered or skipped.
+* You will be prompted to `Enter key password for <pih-biometrics>`.  You can use the same or different from previous.
+* You can name the keystore file anything you like, you will refer to it by the name you give it below
+
+You will then need to ensure that your application.yml file is configured to utilize https and this keystore with the following:
+
+```yaml
+server:
+  port: 9443
+  ssl.key-store: keystore.jks
+  ssl.key-store-password: <key-store-pw>
+  ssl.key-password: <key-pw>
+```
 
 **Add configuration and licenses**:
 
@@ -139,6 +159,15 @@ After building the project, the server can be run via the jar file.  It can also
 
 * Must include the jna.library.path explicitly, as specified above.
 * Must pass in the location of the yaml configuration file, as specified above.
+
+# Connecting to OpenMRS
+
+Currently, having the CSRF Guard enabled on OpenMRS servers is incompatible with using the fingerprint client.  On servers that support fingerpinting, this needs to be disabled.
+To do so, this can be done by adding the following property to the server's runtime properties file and restarting:
+
+```properties
+org.owasp.csrfguard.Enabled=false
+```
 
 Example:
 ```
