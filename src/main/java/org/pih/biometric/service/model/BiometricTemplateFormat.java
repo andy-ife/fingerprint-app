@@ -13,5 +13,5 @@ package org.pih.biometric.service.model;
  * Represents a particular Format that a sample can be stored in
  */
 public enum BiometricTemplateFormat {
-    ISO, PROPRIETARY
+    ANSI378, ISO19794, SG400
 }

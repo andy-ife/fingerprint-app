@@ -27,12 +27,13 @@ public class BiometricConfig implements Serializable {
         COMPACT, SMALL, MEDIUM, LARGE
     }
 
-    //****** PROPERTIES *****
+    // ****** PROPERTIES *****
 
     private boolean matchingServiceEnabled = false;
     private boolean fingerprintScanningEnabled = true;
     private List<File> licenseFiles;
     private String sqliteDatabasePath;
+    private String backupSqliteDatabasePath;
     private Integer matchingThreshold;
     private MatchingSpeed matchingSpeed;
     private TemplateSize templateSize;
@@ -77,6 +78,14 @@ public class BiometricConfig implements Serializable {
 
     public void setSqliteDatabasePath(String sqliteDatabasePath) {
         this.sqliteDatabasePath = sqliteDatabasePath;
+    }
+
+    public String getBackupSqliteDatabasePath() {
+        return backupSqliteDatabasePath;
+    }
+
+    public void setBackupSqliteDatabasePath(String backupSqliteDatabasePath) {
+        this.backupSqliteDatabasePath = backupSqliteDatabasePath;
     }
 
     public Integer getMatchingThreshold() {

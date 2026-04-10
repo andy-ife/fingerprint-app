@@ -19,8 +19,6 @@
     </parent>
 
     <properties>
-        <!-- <neurotecVersion>9.0.0.0</neurotecVersion>
-        <neurotecLibPath>/opt/Neurotec_Biometric_9_0_SDK/Lib/Linux_x86_64</neurotecLibPath> -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
@@ -61,56 +59,10 @@
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <!-- Neurotechnology -->
-
-        <!-- <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-biometrics</artifactId>
-            <version>${neurotecVersion}</version>
-        </dependency>
-
         <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-core</artifactId>
-            <version>${neurotecVersion}</version>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-licensing</artifactId>
-            <version>${neurotecVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-biometrics-client</artifactId>
-            <version>${neurotecVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-media</artifactId>
-            <version>${neurotecVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-media-processing</artifactId>
-            <version>${neurotecVersion}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>net.java.dev.jna</groupId>
-            <artifactId>jna</artifactId>
-            <version>4.2.2-Neurotec</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.neurotec</groupId>
-            <artifactId>neurotec-devices</artifactId>
-            <version>${neurotecVersion}</version>
-        </dependency> -->
 
         <!-- commons -->
 
@@ -151,7 +103,19 @@
             <systemPath>${project.basedir}/lib/SecuSearch3SDKPro/lib/secusearch-api-3.2.4.jar</systemPath>
         </dependency>
 
+        <!-- SQLite db -->
+
+        <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.51.3.0</version>
+        </dependency>
     </dependencies>
+
+    <dependency>
+        <groupId>org.hibernate.orm</groupId>
+        <artifactId>hibernate-community-dialects</artifactId>
+    </dependency>
 
     <build>
         <plugins>
