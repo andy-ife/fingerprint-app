@@ -13,3 +13,4 @@ target/
 
 ### Fingerprint sdk implementation details
 lib/
+config/

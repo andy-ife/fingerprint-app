@@ -9,16 +9,15 @@
  */
 package org.pih.biometric.service.model;
 
-import java.io.Serializable;
-
 /**
  * Represents a single fingerprint scan for a person
  */
-public class Fingerprint extends BiometricSample implements Serializable {
+public class Fingerprint extends BiometricSample {
 
     private String image;
 
-    public Fingerprint() { }
+    public Fingerprint() {
+    }
 
     public String getImage() {
         return image;
