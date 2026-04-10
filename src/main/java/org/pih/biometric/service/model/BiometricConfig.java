@@ -9,10 +9,7 @@
  */
 package org.pih.biometric.service.model;
 
-import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Encapsulates configuration of the Neurotechnology client
@@ -31,7 +28,7 @@ public class BiometricConfig implements Serializable {
 
     private boolean matchingServiceEnabled = false;
     private boolean fingerprintScanningEnabled = true;
-    private List<File> licenseFiles;
+    private String licenseFilePath;
     private String sqliteDatabasePath;
     private String backupSqliteDatabasePath;
     private Integer matchingThreshold;
@@ -41,11 +38,8 @@ public class BiometricConfig implements Serializable {
 
     // ***** PROPERTY ACCESS *****
 
-    public List<File> getLicenseFiles() {
-        if (licenseFiles == null) {
-            licenseFiles = new ArrayList<>();
-        }
-        return licenseFiles;
+    public String getLicenseFilePath() {
+        return licenseFilePath;
     }
 
     public boolean isMatchingServiceEnabled() {
@@ -64,12 +58,8 @@ public class BiometricConfig implements Serializable {
         this.fingerprintScanningEnabled = fingerprintScanningEnabled;
     }
 
-    public void addLicenseFile(File licenseFile) {
-        getLicenseFiles().add(licenseFile);
-    }
-
-    public void setLicenseFiles(List<File> licenseFiles) {
-        this.licenseFiles = licenseFiles;
+    public void setLicenseFilePath(String licenseFilePath) {
+        this.licenseFilePath = licenseFilePath;
     }
 
     public String getSqliteDatabasePath() {

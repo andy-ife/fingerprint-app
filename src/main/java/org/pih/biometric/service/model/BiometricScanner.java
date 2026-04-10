@@ -9,29 +9,35 @@
  */
 package org.pih.biometric.service.model;
 
-import com.neurotec.devices.NDevice;
-
 import java.io.Serializable;
 
+import SecuGen.FDxSDKPro.jni.SGDeviceInfoParam;
+
 /**
- * Simple bean to encapsulate a Device capable of extracting a Biometric template
+ * Simple bean to encapsulate a Device capable of extracting a Biometric
+ * template
  */
 public class BiometricScanner implements Serializable {
 
     private String id;
     private String displayName;
-    private String make;
-    private String model;
-    private String serialNumber;
+    private String firmwareVersion;
+    private int brightness;
+    private int imageDpi;
+    private int imageHeight;
+    private int imageWidth;
 
-    public BiometricScanner() { }
+    public BiometricScanner() {
+    }
 
-    public BiometricScanner(NDevice device) {
-        this.id = device.getId();
-        this.displayName = device.getDisplayName();
-        this.make = device.getMake();
-        this.model = device.getModel();
-        this.serialNumber = device.getSerialNumber();
+    public BiometricScanner(SGDeviceInfoParam device) {
+        this.id = String.valueOf(device.deviceID);
+        this.displayName = "Device #" + String.valueOf(device.deviceSN());
+        this.firmwareVersion = String.valueOf(device.FWVersion);
+        this.brightness = device.brightness;
+        this.imageDpi = device.imageDPI;
+        this.imageHeight = device.imageHeight;
+        this.imageWidth = device.imageWidth;
     }
 
     @Override
@@ -61,27 +67,43 @@ public class BiometricScanner implements Serializable {
         this.displayName = displayName;
     }
 
-    public String getMake() {
-        return make;
+    public String getFirmwareVersion() {
+        return firmwareVersion;
     }
 
-    public void setMake(String make) {
-        this.make = make;
+    public void setFirmwareVersion(String make) {
+        this.firmwareVersion = make;
     }
 
-    public String getModel() {
-        return model;
+    public int getBrightness() {
+        return brightness;
     }
 
-    public void setModel(String model) {
-        this.model = model;
+    public void setBrightness(int brightness) {
+        this.brightness = brightness;
     }
 
-    public String getSerialNumber() {
-        return serialNumber;
+    public int getImageDpi() {
+        return imageDpi;
     }
 
-    public void setSerialNumber(String serialNumber) {
-        this.serialNumber = serialNumber;
+    public void setImageDpi(int imageDpi) {
+        this.imageDpi = imageDpi;
+    }
+
+    public int getImageHeight() {
+        return imageHeight;
+    }
+
+    public void setImageHeight(int imageHeight) {
+        this.imageHeight = imageHeight;
+    }
+
+    public int getImageWidth() {
+        return imageWidth;
+    }
+
+    public void setImageWidth(int imageWidth) {
+        this.imageWidth = imageWidth;
     }
 }

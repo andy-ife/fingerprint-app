@@ -9,25 +9,10 @@
  */
 package org.pih.biometric.service.api;
 
-import com.neurotec.biometrics.NBiometricOperation;
-import com.neurotec.biometrics.NBiometricStatus;
-import com.neurotec.biometrics.NBiometricTask;
-import com.neurotec.biometrics.NFRecord;
-import com.neurotec.biometrics.NFTemplate;
-import com.neurotec.biometrics.NMatchingResult;
-import com.neurotec.biometrics.NMatchingSpeed;
-import com.neurotec.biometrics.NSubject;
-import com.neurotec.biometrics.NTemplate;
-import com.neurotec.biometrics.NTemplateSize;
-import com.neurotec.biometrics.client.NBiometricClient;
-import com.neurotec.biometrics.standards.CBEFFBDBFormatIdentifiers;
-import com.neurotec.biometrics.standards.CBEFFBiometricOrganizations;
-import com.neurotec.biometrics.standards.FMRecord;
-import com.neurotec.io.NBuffer;
-import com.neurotec.lang.NObject;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.pih.biometric.service.data.service.BiometricSubjectService;
 import org.pih.biometric.service.exception.BiometricServiceException;
 import org.pih.biometric.service.exception.DuplicateSubjectException;
 import org.pih.biometric.service.exception.ServiceNotEnabledException;
@@ -40,6 +25,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import com.secugen.secusearch.api.SSEngineParam;
+import com.secugen.secusearch.api.SSException;
+import com.secugen.secusearch.api.SecuSearch;
+
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.util.ArrayList;
@@ -48,25 +37,27 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Component that enables interaction with the biometric matching service, including enrollment, matching, and retrieval of templates
+ * Component that enables interaction with the biometric matching service,
+ * including enrollment, matching, and retrieval of templates
  */
 @Component
 public class BiometricMatchingEngine {
-	
-	protected final Log log = LogFactory.getLog(this.getClass());
 
-	@Autowired
+    protected final Log log = LogFactory.getLog(this.getClass());
+
+    @Autowired
     BiometricConfig config;
 
     @Autowired
-    BiometricLicenseManager licenseManager;
+    BiometricSubjectService backupDbService;
 
     /**
-     * On startup, we ensure licenses are appropriately added and the server is available
-     * TODO: do we want to obtain licenses on startup as well, as we now have the scanning engine do?
+     * On startup, we ensure licenses are appropriately added and the server is
+     * available
      */
     @PostConstruct
     public void startup() {
+        initializeEngine();
         initializeDatabase();
     }
 
@@ -76,7 +67,7 @@ public class BiometricMatchingEngine {
     public BiometricSubject enroll(BiometricSubject biometricSubject) {
         log.debug("Enrolling subject: " + biometricSubject.getSubjectId());
 
-        NBiometricClient client = null;
+        SecuSearch client = null;
         NSubject subject = null;
         NBiometricTask task = null;
 
@@ -85,7 +76,8 @@ public class BiometricMatchingEngine {
         }
 
         if (biometricSubject.getFingerprints().isEmpty()) {
-            throw new BiometricServiceException("Unable to enroll biometrics since subject does not contain any fingerprints");
+            throw new BiometricServiceException(
+                    "Unable to enroll biometrics since subject does not contain any fingerprints");
         }
 
         obtainLicense();
@@ -99,15 +91,14 @@ public class BiometricMatchingEngine {
             if (task.getStatus() != NBiometricStatus.OK) {
                 if (task.getStatus() == NBiometricStatus.DUPLICATE_ID) {
                     throw new DuplicateSubjectException(biometricSubject.getSubjectId());
-                }
-                else {
-                    throw new BiometricServiceException("Unable to save the template. Status: " + task.getStatus(), task.getError());
+                } else {
+                    throw new BiometricServiceException("Unable to save the template. Status: " + task.getStatus(),
+                            task.getError());
                 }
             }
 
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
-        }
-        finally {
+        } finally {
             releaseLicense();
             dispose(task, subject, client);
         }
@@ -142,12 +133,12 @@ public class BiometricMatchingEngine {
 
             // Check the result and handle errors if they occur
             if (task.getStatus() != NBiometricStatus.OK) {
-                throw new BiometricServiceException("Unable to save the template. Status: " + task.getStatus(), task.getError());
+                throw new BiometricServiceException("Unable to save the template. Status: " + task.getStatus(),
+                        task.getError());
             }
 
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
-        }
-        finally {
+        } finally {
             releaseLicense();
             dispose(task, subject, client);
         }
@@ -156,7 +147,8 @@ public class BiometricMatchingEngine {
     }
 
     /**
-     * @return a List of BiometricsMatch that match the given biometricSubject, along with information on the match quality
+     * @return a List of BiometricsMatch that match the given biometricSubject,
+     *         along with information on the match quality
      */
     public List<BiometricMatch> identify(BiometricSubject biometricSubject) {
         List<BiometricMatch> ret = new ArrayList<BiometricMatch>();
@@ -177,15 +169,12 @@ public class BiometricMatchingEngine {
                 for (NMatchingResult result : subject.getMatchingResults()) {
                     ret.add(new BiometricMatch(result.getId(), result.getScore()));
                 }
-            }
-            else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
+            } else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
                 log.debug("No match found");
-            }
-            else {
+            } else {
                 log.warn("Identification failed. Status: " + status);
             }
-        }
-        finally {
+        } finally {
             releaseLicense();
             dispose(subject, client);
         }
@@ -202,23 +191,25 @@ public class BiometricMatchingEngine {
         try {
             client = createBiometricClient();
             return client.getCount();
-        }
-        finally {
+        } finally {
             releaseLicense();
             dispose(client);
         }
     }
 
     /**
-     * @return the biometric template for the given subjectId with the default Neurotechnology format
+     * @return the biometric template for the given subjectId with the default
+     *         Neurotechnology format
      */
     public BiometricSubject getSubject(String subjectId) {
         return getSubject(subjectId, BiometricTemplateFormat.PROPRIETARY);
     }
 
     /**
-     * @return the biometric template for the given subjectId with the specified format.
-     * If format is null, it defaults to the Neurotechnology proprietary format
+     * @return the biometric template for the given subjectId with the specified
+     *         format.
+     *         If format is null, it defaults to the Neurotechnology proprietary
+     *         format
      */
     public BiometricSubject getSubject(String subjectId, BiometricTemplateFormat format) {
         log.debug("Retrieving subject: " + subjectId);
@@ -259,15 +250,13 @@ public class BiometricMatchingEngine {
                 }
 
                 return biometricSubject;
-            }
-            else if (status != NBiometricStatus.ID_NOT_FOUND) {
-                throw new BiometricServiceException("An error occurred while looking up biometrics for subject. Status: " + status);
-            }
-            else {
+            } else if (status != NBiometricStatus.ID_NOT_FOUND) {
+                throw new BiometricServiceException(
+                        "An error occurred while looking up biometrics for subject. Status: " + status);
+            } else {
                 log.debug("No saved biometrics found for subject: " + subjectId);
             }
-        }
-        finally {
+        } finally {
             releaseLicense();
             dispose(subject, client);
         }
@@ -276,10 +265,11 @@ public class BiometricMatchingEngine {
     }
 
     /**
-     * // TODO: This method is currently untested.  Here for reference only
+     * // TODO: This method is currently untested. Here for reference only
      */
     protected NSubject convertSubjectFromFormat(NSubject subject, BiometricTemplateFormat format) {
-        // Extracting a template in a format other than the default requires an extraction license
+        // Extracting a template in a format other than the default requires an
+        // extraction license
         if (format != null && format != BiometricTemplateFormat.PROPRIETARY) {
             try {
                 licenseManager.obtainExtractionLicense();
@@ -288,12 +278,10 @@ public class BiometricMatchingEngine {
                             CBEFFBiometricOrganizations.ISO_IEC_JTC_1_SC_37_BIOMETRICS,
                             CBEFFBDBFormatIdentifiers.ISO_IEC_JTC_1_SC_37_BIOMETRICS_FINGER_MINUTIAE_RECORD_FORMAT,
                             FMRecord.VERSION_ISO_CURRENT));
-                }
-                else {
+                } else {
                     throw new BiometricServiceException("Unable to handle extract template in format: " + format);
                 }
-            }
-            finally {
+            } finally {
                 licenseManager.releaseExtractionLicense();
             }
         }
@@ -314,60 +302,67 @@ public class BiometricMatchingEngine {
             NBiometricStatus status = client.delete(subjectId);
 
             if (status != NBiometricStatus.OK) {
-                throw new BiometricServiceException("An error occurred while deleting the template for subject " + subjectId + ". Status: " + status);
+                throw new BiometricServiceException("An error occurred while deleting the template for subject "
+                        + subjectId + ". Status: " + status);
             }
 
             log.debug("No saved biometrics found for subject: " + subjectId);
-        }
-        finally {
+        } finally {
             releaseLicense();
             dispose(client);
         }
     }
 
-    //***** CONVENIENCE METHODS *****
+    // ***** CONVENIENCE METHODS *****
 
-    private void obtainLicense() {
-        licenseManager.obtainMatchingLicense();
-    }
-
-    private void releaseLicense() {
-        licenseManager.releaseMatchingLicense();
+    private void terminateEngine() {
+        try {
+            SecuSearch.getInstance().terminateEngine();
+        } catch (Exception e) {
+            System.err.println("Error terminating engine: " + e.toString());
+        }
     }
 
     private void initializeDatabase() {
-        if (!StringUtils.isEmpty(config.getSqliteDatabasePath())) {
-            File sqlDb = new File(config.getSqliteDatabasePath());
-            if (!sqlDb.exists()) {
-                try {
-                    sqlDb.getParentFile().mkdirs();
-                    sqlDb.createNewFile();
-                }
-                catch (Exception e) {
-                    throw new BiometricServiceException("Unable to create database file at " + config.getSqliteDatabasePath(), e);
-                }
+        String db = config.getSqliteDatabasePath();
+        String backupDb = config.getBackupSqliteDatabasePath();
+
+        try {
+            boolean success = SecuSearch.getInstance().loadFPDB(db);
+            if (!success) {
+                SecuSearch.getInstance().loadFPDB(backupDb);
             }
+        } catch (SSException e) {
+            try {
+                System.err.println("Error loading main database: " + e.getErrorCode() + e.toString());
+                SecuSearch.getInstance().loadFPDB(backupDb);
+            } catch (Exception er) {
+                System.err.println("Error loading backup database: " + er.toString());
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading databases: " + e.toString());
         }
     }
 
     /**
-     * @return Biometric client, configured with appropriate properties from configuration
+     * @return Biometric client, configured with appropriate properties from
+     *         configuration
      */
-    private NBiometricClient createBiometricClient() {
+    private SecuSearch initializeEngine() {
         if (!config.isMatchingServiceEnabled()) {
             throw new ServiceNotEnabledException("Biometric Enrollment, Identification, and Matching");
         }
-        NBiometricClient client = new NBiometricClient();
-        client.setDatabaseConnectionToSQLite(config.getSqliteDatabasePath());
-        client.setMatchingThreshold(config.getMatchingThreshold());
-        client.setFingersMatchingSpeed(NMatchingSpeed.valueOf(config.getMatchingSpeed().name()));
-        client.setFingersTemplateSize(NTemplateSize.valueOf(config.getTemplateSize().name()));
-        return client;
+        try {
+            SecuSearch.getInstance().initializeEngine(new SSEngineParam(0, 10, config.getLicenseFilePath(), false));
+        } catch (Exception e) {
+            System.out.println("Error creating biometric client: " + e.toString());
+        }
+        return SecuSearch.getInstance();
     }
 
     /**
      * @return converts a BiometricSubject to an NSubject
-     * // TODO: Unclear how the type and format should be applied here
+     *         // TODO: Unclear how the type and format should be applied here
      */
     private NSubject createSubject(BiometricSubject biometricSubject) {
         NSubject subject = new NSubject();
@@ -386,15 +381,13 @@ public class BiometricMatchingEngine {
                                     compositeTemplate.getRecords().add(record);
                                 }
                             }
-                        }
-                        finally {
+                        } finally {
                             dispose(template);
                         }
                     }
                 }
                 subject.setTemplateBuffer(compositeTemplate.save());
-            }
-            finally {
+            } finally {
                 dispose(compositeTemplate);
             }
         }
@@ -404,16 +397,5 @@ public class BiometricMatchingEngine {
         }
 
         return subject;
-    }
-
-    /**
-     * Ensures a list of possible disposable objects are disposed of
-     */
-    private void dispose(NObject... objects) {
-        for (NObject o : objects) {
-            if (o != null) {
-                o.dispose();
-            }
-        }
     }
 }
