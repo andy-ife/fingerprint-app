@@ -19,8 +19,8 @@
     </parent>
 
     <properties>
-        <neurotecVersion>9.0.0.0</neurotecVersion>
-        <neurotecLibPath>/opt/Neurotec_Biometric_9_0_SDK/Lib/Linux_x86_64</neurotecLibPath>
+        <!-- <neurotecVersion>9.0.0.0</neurotecVersion>
+        <neurotecLibPath>/opt/Neurotec_Biometric_9_0_SDK/Lib/Linux_x86_64</neurotecLibPath> -->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>1.8</java.version>
@@ -64,7 +64,7 @@
 
         <!-- Neurotechnology -->
 
-        <dependency>
+        <!-- <dependency>
             <groupId>com.neurotec</groupId>
             <artifactId>neurotec-biometrics</artifactId>
             <version>${neurotecVersion}</version>
@@ -110,7 +110,7 @@
             <groupId>com.neurotec</groupId>
             <artifactId>neurotec-devices</artifactId>
             <version>${neurotecVersion}</version>
-        </dependency>
+        </dependency> -->
 
         <!-- commons -->
 
