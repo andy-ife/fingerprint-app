@@ -10,3 +10,6 @@ target/
 *.iws
 *.iml
 *.ipr
+
+### Fingerprint sdk implementation details
+lib/

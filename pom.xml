@@ -134,6 +134,15 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- SecuGen Biometrics SDK -->
+        <dependency>
+            <groupId>com.secugen</groupId>
+            <artifactId>fdxsdkpro</artifactId>
+            <version>1.21</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/FDxSDKPro/FDxSDKPro.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
     <build>
