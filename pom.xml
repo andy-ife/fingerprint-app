@@ -143,6 +143,14 @@
             <systemPath>${project.basedir}/lib/FDxSDKPro/FDxSDKPro.jar</systemPath>
         </dependency>
 
+        <dependency>
+            <groupId>com.secugen</groupId>
+            <artifactId>secusearch-api</artifactId>
+            <version>3.2.4</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/SecuSearch3SDKPro/lib/secusearch-api-3.2.4.jar</systemPath>
+        </dependency>
+
     </dependencies>
 
     <build>
