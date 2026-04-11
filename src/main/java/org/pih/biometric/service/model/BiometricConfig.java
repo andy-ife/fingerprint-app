@@ -34,6 +34,7 @@ public class BiometricConfig implements Serializable {
     private Integer matchingThreshold;
     private MatchingSpeed matchingSpeed;
     private TemplateSize templateSize;
+    private Integer deviceName;
     private Integer ajpPort;
 
     // ***** PROPERTY ACCESS *****
@@ -100,6 +101,14 @@ public class BiometricConfig implements Serializable {
 
     public void setTemplateSize(TemplateSize templateSize) {
         this.templateSize = templateSize;
+    }
+
+    public Integer getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(Integer deviceName) {
+        this.deviceName = deviceName;
     }
 
     public Integer getAjpPort() {
