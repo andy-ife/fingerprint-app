@@ -35,12 +35,15 @@ public class BiometricMatchingEngineTest extends BaseBiometricTest {
 
         // Get template in default format
         String defaultFormat = matchingEngine.getSubject(subjectId).getFingerprints().get(0).getTemplate();
-        String neuroFormat = matchingEngine.getSubject(subjectId, BiometricTemplateFormat.PROPRIETARY).getFingerprints().get(0).getTemplate();
+        String secugenFormat = matchingEngine.getSubject(subjectId, BiometricTemplateFormat.SG400).getFingerprints()
+                .get(0).getTemplate();
 
-        // For now just verify that these extractions all work successfully, and produce different template results
-        assertThat(neuroFormat, is(defaultFormat));
+        // For now just verify that these extractions all work successfully, and produce
+        // different template results
+        assertThat(secugenFormat, is(defaultFormat));
 
-        String isoFormat = matchingEngine.getSubject(subjectId, BiometricTemplateFormat.ISO).getFingerprints().get(0).getTemplate();
+        String isoFormat = matchingEngine.getSubject(subjectId, BiometricTemplateFormat.ANSI378).getFingerprints()
+                .get(0).getTemplate();
         assertThat(isoFormat, not(defaultFormat));
     }
 }
