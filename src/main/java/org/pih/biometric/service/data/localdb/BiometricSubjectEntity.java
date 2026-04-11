@@ -2,26 +2,27 @@ package org.pih.biometric.service.data.localdb;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
+
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(name = "biometric_subject")
 public class BiometricSubjectEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String subjectId;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    @JoinColumn(name = "subject_id_fk")
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "biometric_subject_id")
     private List<FingerprintEntity> fingerprints = new ArrayList<>();
 
     public BiometricSubjectEntity() {

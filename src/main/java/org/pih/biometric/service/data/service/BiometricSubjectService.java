@@ -3,6 +3,8 @@ package org.pih.biometric.service.data.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.transaction.Transactional;
+
 import org.pih.biometric.service.data.localdb.BiometricSubjectEntity;
 import org.pih.biometric.service.data.localdb.FingerprintEntity;
 import org.pih.biometric.service.data.repository.BiometricSubjectRepository;
@@ -20,33 +22,89 @@ public class BiometricSubjectService {
         this.subjectRepo = repo;
     }
 
-    public void saveSubjectSqlite(BiometricSubject subject) {
+    public BiometricSubject saveSubject(BiometricSubject subject) {
         BiometricSubjectEntity entity = mapToEntity(subject);
-        subjectRepo.save(entity);
+        entity = subjectRepo.save(entity);
+        return mapToModel(entity);
     }
 
-    public void saveSubjectsSqlite(List<BiometricSubject> subjects) {
+    public List<BiometricSubject> saveSubjects(List<BiometricSubject> subjects) {
         List<BiometricSubjectEntity> entities = subjects.stream()
                 .map(this::mapToEntity)
                 .collect(Collectors.toList());
-        subjectRepo.save(entities);
+        entities = subjectRepo.save(entities);
+        return entities.stream().map(this::mapToModel).collect(Collectors.toList());
     }
 
-    public List<BiometricSubject> loadSubjectsSqlite() {
+    public List<BiometricSubject> loadSubjects() {
         return subjectRepo.findAll().stream()
                 .map(this::mapToModel)
                 .collect(Collectors.toList());
     }
 
-    public void clearDBSqlite() {
+    public BiometricSubject getSubjectByFingerprintId(int fingerprintId) {
+        BiometricSubjectEntity entity = subjectRepo.findByFingerprints_Id(fingerprintId);
+        if (entity != null) {
+            return mapToModel(entity);
+        }
+        return null;
+    }
+
+    public BiometricSubject findSubjectBySubjectId(String subjectId) {
+        BiometricSubjectEntity entity = subjectRepo.findBySubjectId(subjectId);
+        return mapToModel(entity);
+    }
+
+    @Transactional
+    public void removeSubject(BiometricSubject subject) {
+        BiometricSubjectEntity entity = subjectRepo.findBySubjectId(subject.getSubjectId());
+        if (entity != null) {
+            subjectRepo.delete(entity);
+        }
+    }
+
+    @Transactional
+    public BiometricSubject deleteBySubjectId(String subjectId) {
+        List<BiometricSubjectEntity> deletedEntities = subjectRepo.deleteBySubjectId(subjectId);
+        if (deletedEntities != null && !deletedEntities.isEmpty()) {
+            return mapToModel(deletedEntities.get(0));
+        }
+        return null;
+    }
+
+    @Transactional
+    public BiometricSubject updateSubject(BiometricSubject subject) {
+        BiometricSubjectEntity entity = subjectRepo.findBySubjectId(subject.getSubjectId());
+        if (entity != null) {
+            // Clear existing fingerprints to let orphanRemoval clean them up
+            entity.getFingerprints().clear();
+
+            // Add the updated/new fingerprints
+            if (subject.getFingerprints() != null) {
+                for (Fingerprint fingerprint : subject.getFingerprints()) {
+                    FingerprintEntity fpEntity = new FingerprintEntity(
+                            fingerprint.getId(), fingerprint.getType(), fingerprint.getFormat(),
+                            fingerprint.getTemplate());
+                    entity.addFingerprint(fpEntity);
+                }
+            }
+
+            // Save handles updates for existing entities automatically in JPA
+            entity = subjectRepo.save(entity);
+            return mapToModel(entity);
+        }
+        return null;
+    }
+
+    public void clearDB() {
         subjectRepo.clearDB();
     }
 
-    public int getSubjectCountSqlite() {
+    public int getSubjectCount() {
         return subjectRepo.getSubjectCount();
     }
 
-    public List<Long> getSubjectIDListSqlite() {
+    public List<Long> getSubjectIDList() {
         return subjectRepo.getSubjectIdList();
     }
 
@@ -56,6 +114,7 @@ public class BiometricSubjectService {
         if (entity.getFingerprints() != null) {
             for (FingerprintEntity fpEntity : entity.getFingerprints()) {
                 Fingerprint fingerprint = new Fingerprint();
+                fingerprint.setId(fpEntity.getId());
                 fingerprint.setType(fpEntity.getType());
                 fingerprint.setFormat(fpEntity.getFormat());
                 fingerprint.setTemplate(fpEntity.getTemplate());
@@ -70,7 +129,7 @@ public class BiometricSubjectService {
         if (subject.getFingerprints() != null) {
             for (Fingerprint fingerprint : subject.getFingerprints()) {
                 FingerprintEntity fpEntity = new FingerprintEntity(
-                        fingerprint.getType(), fingerprint.getFormat(), fingerprint.getTemplate());
+                        fingerprint.getId(), fingerprint.getType(), fingerprint.getFormat(), fingerprint.getTemplate());
                 entity.addFingerprint(fpEntity);
             }
         }

@@ -10,6 +10,13 @@ import java.util.List;
 
 public interface BiometricSubjectRepository extends JpaRepository<BiometricSubjectEntity, Long> {
 
+    BiometricSubjectEntity findBySubjectId(String subjectId);
+
+    BiometricSubjectEntity findByFingerprints_Id(int fingerprintId);
+
+    @Transactional
+    List<BiometricSubjectEntity> deleteBySubjectId(String subjectId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM BiometricSubjectEntity")

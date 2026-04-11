@@ -13,22 +13,35 @@ import java.io.Serializable;
 
 /**
  * Represents a sample of biometric data for a person
- * type: represents an implementation-configurable representation of the given sample (eg. "LEFT_MIDDLE_FINGER")
- * format: represents the standard used to represent the template, ISO, ANSI, etc
- * template:  the textual representation of the sample, generally Base64 encoded binary data
+ * type: represents an implementation-configurable representation of the given
+ * sample (eg. "LEFT_MIDDLE_FINGER")
+ * format: represents the standard used to represent the template, ISO, ANSI,
+ * etc
+ * template: the textual representation of the sample, generally Base64 encoded
+ * binary data
  */
 public class BiometricSample implements Serializable {
 
+    private int id;
     private String type;
     private BiometricTemplateFormat format;
     private String template;
 
-    public BiometricSample() { }
+    public BiometricSample() {
+    }
 
     public BiometricSample(String type, BiometricTemplateFormat format, String template) {
         this.type = type;
         this.format = format;
         this.template = template;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getType() {

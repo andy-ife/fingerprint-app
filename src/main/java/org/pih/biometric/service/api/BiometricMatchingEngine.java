@@ -9,12 +9,10 @@
  */
 package org.pih.biometric.service.api;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.pih.biometric.service.data.service.BiometricSubjectService;
 import org.pih.biometric.service.exception.BiometricServiceException;
-import org.pih.biometric.service.exception.DuplicateSubjectException;
 import org.pih.biometric.service.exception.ServiceNotEnabledException;
 import org.pih.biometric.service.model.BiometricConfig;
 import org.pih.biometric.service.model.BiometricMatch;
@@ -23,16 +21,17 @@ import org.pih.biometric.service.model.BiometricTemplateFormat;
 import org.pih.biometric.service.model.Fingerprint;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
+import com.secugen.secusearch.api.SSCandidate;
 import com.secugen.secusearch.api.SSEngineParam;
 import com.secugen.secusearch.api.SSException;
+import com.secugen.secusearch.api.SSIdTemplatePair;
 import com.secugen.secusearch.api.SecuSearch;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
+import javax.annotation.PreDestroy;
+
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -58,7 +57,11 @@ public class BiometricMatchingEngine {
     @PostConstruct
     public void startup() {
         initializeEngine();
-        initializeDatabase();
+    }
+
+    @PreDestroy
+    public void dispose() {
+        terminateEngine();
     }
 
     /**
@@ -66,10 +69,6 @@ public class BiometricMatchingEngine {
      */
     public BiometricSubject enroll(BiometricSubject biometricSubject) {
         log.debug("Enrolling subject: " + biometricSubject.getSubjectId());
-
-        SecuSearch client = null;
-        NSubject subject = null;
-        NBiometricTask task = null;
 
         if (biometricSubject.getSubjectId() == null) {
             biometricSubject.setSubjectId(UUID.randomUUID().toString()); // Setting subject id as a random uuid
@@ -80,27 +79,22 @@ public class BiometricMatchingEngine {
                     "Unable to enroll biometrics since subject does not contain any fingerprints");
         }
 
-        obtainLicense();
         try {
-            client = createBiometricClient();
-            subject = createSubject(biometricSubject);
-            task = client.createTask(EnumSet.of(NBiometricOperation.ENROLL), subject);
-            client.performTask(task);
+            BiometricSubject savedSubject = backupDbService.saveSubject(biometricSubject);
+            boolean success = SecuSearch.getInstance()
+                    .registerFPBatch(savedSubject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
+                            .toArray(SSIdTemplatePair[]::new));
 
             // Check the result and handle errors if they occur
-            if (task.getStatus() != NBiometricStatus.OK) {
-                if (task.getStatus() == NBiometricStatus.DUPLICATE_ID) {
-                    throw new DuplicateSubjectException(biometricSubject.getSubjectId());
-                } else {
-                    throw new BiometricServiceException("Unable to save the template. Status: " + task.getStatus(),
-                            task.getError());
-                }
+            if (success == true) {
+                SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
+            } else {
+                backupDbService.removeSubject(savedSubject);
+                throw new BiometricServiceException("Unable to save the template");
             }
-
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
-        } finally {
-            releaseLicense();
-            dispose(task, subject, client);
+        } catch (Exception e) {
+            System.err.println("Error enrolling subject: " + e.toString());
         }
 
         return biometricSubject;
@@ -112,10 +106,6 @@ public class BiometricMatchingEngine {
     public BiometricSubject update(BiometricSubject biometricSubject) {
         log.debug("Updating subject: " + biometricSubject.getSubjectId());
 
-        NBiometricClient client = null;
-        NSubject subject = null;
-        NBiometricTask task = null;
-
         if (biometricSubject.getSubjectId() == null) {
             throw new BiometricServiceException("Unable to update template as subjectId is missing");
         }
@@ -124,23 +114,23 @@ public class BiometricMatchingEngine {
             throw new BiometricServiceException("Unable to update template since no fingerprints are included");
         }
 
-        obtainLicense();
         try {
-            client = createBiometricClient();
-            subject = createSubject(biometricSubject);
-            task = client.createTask(EnumSet.of(NBiometricOperation.UPDATE), subject);
-            client.performTask(task);
-
-            // Check the result and handle errors if they occur
-            if (task.getStatus() != NBiometricStatus.OK) {
-                throw new BiometricServiceException("Unable to save the template. Status: " + task.getStatus(),
-                        task.getError());
+            BiometricSubject updatedSubject = backupDbService.updateSubject(biometricSubject);
+            biometricSubject = updatedSubject;
+            SecuSearch.getInstance().removeFPBatch(updatedSubject.getFingerprintIds());
+            boolean success = SecuSearch.getInstance()
+                    .registerFPBatch(updatedSubject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
+                            .toArray(SSIdTemplatePair[]::new));
+            if (success == true) {
+                SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
+            } else {
+                SecuSearch.getInstance().loadFPDB(config.getBackupSqliteDatabasePath());
+                throw new BiometricServiceException("Unable to update the subject");
             }
 
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
-        } finally {
-            releaseLicense();
-            dispose(task, subject, client);
+        } catch (Exception e) {
+            System.err.println("Error updating subject: " + e.toString());
         }
 
         return biometricSubject;
@@ -155,28 +145,24 @@ public class BiometricMatchingEngine {
 
         log.debug("Identifying Matches for source template...");
 
-        NBiometricClient client = null;
-        NSubject subject = null;
-
-        obtainLicense();
         try {
-            client = createBiometricClient();
-            subject = createSubject(biometricSubject);
-            NBiometricStatus status = client.identify(subject);
+            SSCandidate[] candidates = SecuSearch.getInstance()
+                    .searchFP(biometricSubject.getFingerprints().get(0).getTemplate().getBytes());
 
-            if (status == NBiometricStatus.OK) {
-                log.debug("Found " + subject.getMatchingResults().size() + " possible matches");
-                for (NMatchingResult result : subject.getMatchingResults()) {
-                    ret.add(new BiometricMatch(result.getId(), result.getScore()));
+            if (candidates.length > 0) {
+                log.debug("Found " + candidates.length + " possible matches");
+                for (SSCandidate candidate : candidates) {
+                    ret.add(new BiometricMatch(
+                            backupDbService.getSubjectByFingerprintId(candidate.getId()).getSubjectId(),
+                            candidate.getMatchScore()));
                 }
-            } else if (status == NBiometricStatus.MATCH_NOT_FOUND) {
+            } else if (candidates.length == 0) {
                 log.debug("No match found");
             } else {
-                log.warn("Identification failed. Status: " + status);
+                throw new BiometricServiceException("Identification failed");
             }
-        } finally {
-            releaseLicense();
-            dispose(subject, client);
+        } catch (Exception e) {
+            System.err.println("Error updating subject: " + e.toString());
         }
 
         return ret;
@@ -186,106 +172,47 @@ public class BiometricMatchingEngine {
      * @return a count of all biometrics enrolled in the system
      */
     public Integer getNumberEnrolled() {
-        NBiometricClient client = null;
-        obtainLicense();
         try {
-            client = createBiometricClient();
-            return client.getCount();
-        } finally {
-            releaseLicense();
-            dispose(client);
+            return Integer.valueOf(backupDbService.getSubjectCount());
+        } catch (Exception e) {
+            System.err.println("Error updating subject: " + e.toString());
         }
+        return -1;
     }
 
     /**
      * @return the biometric template for the given subjectId with the default
-     *         Neurotechnology format
+     *         SecuGen format
      */
     public BiometricSubject getSubject(String subjectId) {
-        return getSubject(subjectId, BiometricTemplateFormat.PROPRIETARY);
+        return getSubject(subjectId, BiometricTemplateFormat.SG400);
     }
 
     /**
      * @return the biometric template for the given subjectId with the specified
      *         format.
-     *         If format is null, it defaults to the Neurotechnology proprietary
+     *         If format is null, it defaults to the SecuGen proprietary
      *         format
      */
     public BiometricSubject getSubject(String subjectId, BiometricTemplateFormat format) {
         log.debug("Retrieving subject: " + subjectId);
         BiometricSubject biometricSubject = null;
 
-        NBiometricClient client = null;
-        NSubject subject = null;
-
-        obtainLicense();
         try {
-            client = createBiometricClient();
-            subject = createSubject(new BiometricSubject(subjectId));
-            NBiometricStatus status = client.get(subject);
-
-            format = (format == null ? BiometricTemplateFormat.PROPRIETARY : format);
-
-            if (status == NBiometricStatus.OK) {
-
-                biometricSubject = new BiometricSubject(subjectId);
+            biometricSubject = backupDbService.findSubjectBySubjectId(subjectId);
+            if (biometricSubject != null) {
                 log.debug("Found subject " + subjectId + ", extracting overall template in format: " + format);
 
-                if (format != BiometricTemplateFormat.PROPRIETARY) {
-                    subject = convertSubjectFromFormat(subject, format);
-                }
-
-                NFTemplate fingers = subject.getTemplate().getFingers();
-                if (fingers != null) {
-                    for (NFRecord record : fingers.getRecords()) {
-                        Fingerprint fp = new Fingerprint();
-                        fp.setFormat(format);
-                        if (record.getPosition() != null) {
-                            fp.setType(record.getPosition().name());
-                        }
-                        byte[] fingerBytes = record.save().toByteArray();
-                        fp.setTemplate(Base64.encodeBase64String(fingerBytes));
-                        biometricSubject.addFingerprint(fp);
-                    }
-                }
-
-                return biometricSubject;
-            } else if (status != NBiometricStatus.ID_NOT_FOUND) {
-                throw new BiometricServiceException(
-                        "An error occurred while looking up biometrics for subject. Status: " + status);
             } else {
-                log.debug("No saved biometrics found for subject: " + subjectId);
+                log.debug("No saved subjects found for this id");
             }
-        } finally {
-            releaseLicense();
-            dispose(subject, client);
+            return biometricSubject;
+        } catch (Exception e) {
+            System.err.println("Error finding subject: " + e.toString());
+
         }
 
         return null;
-    }
-
-    /**
-     * // TODO: This method is currently untested. Here for reference only
-     */
-    protected NSubject convertSubjectFromFormat(NSubject subject, BiometricTemplateFormat format) {
-        // Extracting a template in a format other than the default requires an
-        // extraction license
-        if (format != null && format != BiometricTemplateFormat.PROPRIETARY) {
-            try {
-                licenseManager.obtainExtractionLicense();
-                if (format == BiometricTemplateFormat.ISO) {
-                    subject.setTemplateBuffer(subject.getTemplateBuffer(
-                            CBEFFBiometricOrganizations.ISO_IEC_JTC_1_SC_37_BIOMETRICS,
-                            CBEFFBDBFormatIdentifiers.ISO_IEC_JTC_1_SC_37_BIOMETRICS_FINGER_MINUTIAE_RECORD_FORMAT,
-                            FMRecord.VERSION_ISO_CURRENT));
-                } else {
-                    throw new BiometricServiceException("Unable to handle extract template in format: " + format);
-                }
-            } finally {
-                licenseManager.releaseExtractionLicense();
-            }
-        }
-        return subject;
     }
 
     /**
@@ -294,22 +221,16 @@ public class BiometricMatchingEngine {
     public void deleteSubject(String subjectId) {
         log.debug("Deleting template for subject " + subjectId);
 
-        NBiometricClient client = null;
-
-        obtainLicense();
         try {
-            client = createBiometricClient();
-            NBiometricStatus status = client.delete(subjectId);
-
-            if (status != NBiometricStatus.OK) {
-                throw new BiometricServiceException("An error occurred while deleting the template for subject "
-                        + subjectId + ". Status: " + status);
+            BiometricSubject subject = backupDbService.deleteBySubjectId(subjectId);
+            if (subject != null) {
+                SecuSearch.getInstance().removeFPBatch(subject.getFingerprintIds());
+                SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
             }
-
             log.debug("No saved biometrics found for subject: " + subjectId);
-        } finally {
-            releaseLicense();
-            dispose(client);
+        } catch (Exception e) {
+            System.err.println("Error deleting subject: " + e.toString());
+
         }
     }
 
@@ -323,79 +244,37 @@ public class BiometricMatchingEngine {
         }
     }
 
-    private void initializeDatabase() {
-        String db = config.getSqliteDatabasePath();
-        String backupDb = config.getBackupSqliteDatabasePath();
-
-        try {
-            boolean success = SecuSearch.getInstance().loadFPDB(db);
-            if (!success) {
-                SecuSearch.getInstance().loadFPDB(backupDb);
-            }
-        } catch (SSException e) {
-            try {
-                System.err.println("Error loading main database: " + e.getErrorCode() + e.toString());
-                SecuSearch.getInstance().loadFPDB(backupDb);
-            } catch (Exception er) {
-                System.err.println("Error loading backup database: " + er.toString());
-            }
-        } catch (Exception e) {
-            System.err.println("Error loading databases: " + e.toString());
-        }
-    }
-
-    /**
-     * @return Biometric client, configured with appropriate properties from
-     *         configuration
-     */
-    private SecuSearch initializeEngine() {
+    private void initializeEngine() {
         if (!config.isMatchingServiceEnabled()) {
             throw new ServiceNotEnabledException("Biometric Enrollment, Identification, and Matching");
         }
         try {
             SecuSearch.getInstance().initializeEngine(new SSEngineParam(0, 10, config.getLicenseFilePath(), false));
+            String db = config.getSqliteDatabasePath();
+            String backupDb = config.getBackupSqliteDatabasePath();
+
+            try {
+                boolean success = SecuSearch.getInstance().loadFPDB(db);
+                if (!success) {
+                    SecuSearch.getInstance().loadFPDB(backupDb);
+                }
+            } catch (SSException e) {
+                try {
+                    System.err.println("Error loading main database: " + e.getErrorCode() + e.toString());
+                    SecuSearch.getInstance().loadFPDB(backupDb);
+                } catch (Exception er) {
+                    System.err.println("Error loading backup database: " + er.toString());
+                }
+            } catch (Exception e) {
+                System.err.println("Error loading databases: " + e.toString());
+            }
         } catch (Exception e) {
             System.out.println("Error creating biometric client: " + e.toString());
         }
-        return SecuSearch.getInstance();
     }
 
-    /**
-     * @return converts a BiometricSubject to an NSubject
-     *         // TODO: Unclear how the type and format should be applied here
-     */
-    private NSubject createSubject(BiometricSubject biometricSubject) {
-        NSubject subject = new NSubject();
-        NFTemplate compositeTemplate = null;
-        if (!biometricSubject.getFingerprints().isEmpty()) {
-            try {
-                compositeTemplate = new NFTemplate();
-                for (Fingerprint fp : biometricSubject.getFingerprints()) {
-                    if (fp.getTemplate() != null) {
-                        NTemplate template = null;
-                        try {
-                            byte[] templateBytes = Base64.decodeBase64(fp.getTemplate());
-                            template = new NTemplate(new NBuffer(templateBytes));
-                            if (template.getFingers() != null) {
-                                for (NFRecord record : template.getFingers().getRecords()) {
-                                    compositeTemplate.getRecords().add(record);
-                                }
-                            }
-                        } finally {
-                            dispose(template);
-                        }
-                    }
-                }
-                subject.setTemplateBuffer(compositeTemplate.save());
-            } finally {
-                dispose(compositeTemplate);
-            }
-        }
-        // This needs to come last, or it gets reset
-        if (biometricSubject.getSubjectId() != null) {
-            subject.setId(biometricSubject.getSubjectId());
-        }
-
-        return subject;
+    private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
+        return new SSIdTemplatePair(fingerprint.getId(), fingerprint.getTemplate().getBytes());
     }
+
 }

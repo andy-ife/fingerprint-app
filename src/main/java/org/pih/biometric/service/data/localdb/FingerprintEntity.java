@@ -7,14 +7,16 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
+import javax.persistence.Table;
 
 import org.pih.biometric.service.model.BiometricTemplateFormat;
 
 @Entity
+@Table(name = "fingerprint")
 public class FingerprintEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int id;
 
     @Lob
     private String template;
@@ -27,17 +29,18 @@ public class FingerprintEntity {
     public FingerprintEntity() {
     }
 
-    public FingerprintEntity(String type, BiometricTemplateFormat format, String template) {
+    public FingerprintEntity(int id, String type, BiometricTemplateFormat format, String template) {
+        this.id = id;
         this.type = type;
         this.format = format;
         this.template = template;
     }
 
-    public Long getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(int id) {
         this.id = id;
     }
 
