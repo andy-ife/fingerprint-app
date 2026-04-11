@@ -44,10 +44,13 @@ public class FingerprintScanController {
 
     /**
      * @return Fingerprint that is the result of a scan
+     * 
+     * @param type represents SGFingerPosition which is a
+     *             string from "0" to "10"
      */
     @RequestMapping(method = RequestMethod.GET, value = "/scan")
     @ResponseBody
-    public Fingerprint scan(@RequestParam(value="type", required=false) String type) {
+    public Fingerprint scan(@RequestParam(value = "type", required = false) String type) {
         return engine.scanFingerprint(type);
     }
 }

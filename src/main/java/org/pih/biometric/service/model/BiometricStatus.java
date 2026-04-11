@@ -20,7 +20,8 @@ public class BiometricStatus implements Serializable {
     private String statusMessage;
     private Integer numberEnrolled;
 
-    public BiometricStatus() { }
+    public BiometricStatus() {
+    }
 
     public boolean isEnabled() {
         return enabled;

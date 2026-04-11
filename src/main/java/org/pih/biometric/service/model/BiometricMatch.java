@@ -21,7 +21,8 @@ public class BiometricMatch implements Serializable {
     private String subjectId;
     private Integer matchScore;
 
-    public BiometricMatch() { }
+    public BiometricMatch() {
+    }
 
     public BiometricMatch(String subjectId, Integer matchScore) {
         this.subjectId = subjectId;

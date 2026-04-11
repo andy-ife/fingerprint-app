@@ -102,6 +102,7 @@ public class BiometricMatchingEngine {
 
     /**
      * Updates a biometrics subject
+     * TODO: Needs testing
      */
     public BiometricSubject update(BiometricSubject biometricSubject) {
         log.debug("Updating subject: " + biometricSubject.getSubjectId());
@@ -124,7 +125,7 @@ public class BiometricMatchingEngine {
             if (success == true) {
                 SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
             } else {
-                SecuSearch.getInstance().loadFPDB(config.getBackupSqliteDatabasePath());
+                // the two dbs might be out of sync now? Sync strategy needed
                 throw new BiometricServiceException("Unable to update the subject");
             }
 
@@ -139,6 +140,8 @@ public class BiometricMatchingEngine {
     /**
      * @return a List of BiometricsMatch that match the given biometricSubject,
      *         along with information on the match quality
+     * 
+     *         assume one finger per subject
      */
     public List<BiometricMatch> identify(BiometricSubject biometricSubject) {
         List<BiometricMatch> ret = new ArrayList<BiometricMatch>();
@@ -170,10 +173,16 @@ public class BiometricMatchingEngine {
 
     /**
      * @return a count of all biometrics enrolled in the system
+     *         assume one finger per subject
      */
     public Integer getNumberEnrolled() {
         try {
-            return Integer.valueOf(backupDbService.getSubjectCount());
+            int secuSearchDbNumber = SecuSearch.getInstance().getFPCount();
+            int backupDbNumber = Integer.valueOf(backupDbService.getSubjectCount());
+            if (secuSearchDbNumber != backupDbNumber) {
+                throw new BiometricServiceException("Fingerprint databases out of sync");
+            }
+            return backupDbNumber;
         } catch (Exception e) {
             System.err.println("Error updating subject: " + e.toString());
         }
@@ -251,17 +260,17 @@ public class BiometricMatchingEngine {
         try {
             SecuSearch.getInstance().initializeEngine(new SSEngineParam(0, 10, config.getLicenseFilePath(), false));
             String db = config.getSqliteDatabasePath();
-            String backupDb = config.getBackupSqliteDatabasePath();
 
             try {
                 boolean success = SecuSearch.getInstance().loadFPDB(db);
                 if (!success) {
-                    SecuSearch.getInstance().loadFPDB(backupDb);
+                    // TODO: Somehow populate SecuSearch instance with backup db data
+                    throw new BiometricServiceException("Error initializing fingerprint database");
                 }
             } catch (SSException e) {
                 try {
                     System.err.println("Error loading main database: " + e.getErrorCode() + e.toString());
-                    SecuSearch.getInstance().loadFPDB(backupDb);
+                    // TODO: Somehow populate SecuSearch instance with backup db data
                 } catch (Exception er) {
                     System.err.println("Error loading backup database: " + er.toString());
                 }
