@@ -12,6 +12,7 @@ package com.andyslab.biometric.service.api;
 import SecuGen.FDxSDKPro.jni.JSGFPLib;
 import SecuGen.FDxSDKPro.jni.SGDeviceInfo;
 import SecuGen.FDxSDKPro.jni.SGDeviceInfoParam;
+import SecuGen.FDxSDKPro.jni.SGFDxDeviceName;
 import SecuGen.FDxSDKPro.jni.SGFDxErrorCode;
 import SecuGen.FDxSDKPro.jni.SGFDxTemplateFormat;
 import SecuGen.FDxSDKPro.jni.SGFingerInfo;
@@ -211,7 +212,8 @@ public class FingerprintScanningEngine {
      */
     private void initializeClient() {
         client = new JSGFPLib();
-        long error = client.Init(config.getDeviceName());
+        long error = client.Open();
+        error = client.Init(SGFDxDeviceName.SG_DEV_AUTO);
         if (client != null && error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             // Set template format
             client.SetTemplateFormat(SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400);

@@ -116,6 +116,11 @@
             <artifactId>hibernate-community-dialects</artifactId>
             <version>7.3.0.Final</version>
         </dependency>
+        <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.13.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -125,6 +130,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <executable>true</executable>
+                    <includeSystemScope>true</includeSystemScope>
                 </configuration>
             </plugin>
             <plugin>
@@ -132,7 +138,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <forkMode>once</forkMode>
-                    <argLine>-Djna.library.path=${neurotecLibPath}</argLine>
+                    <argLine>-Djna.library.path=${project.basedir}/lib/FDxSDKPro/jnisgfplib/x64</argLine>
                 </configuration>
             </plugin>
         </plugins>

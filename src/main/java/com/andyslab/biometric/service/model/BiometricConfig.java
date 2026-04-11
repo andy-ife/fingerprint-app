@@ -95,7 +95,10 @@ public class BiometricConfig implements Serializable {
     }
 
     public Integer getDeviceName() {
-        return deviceName;
+        if (deviceName != null)
+            return deviceName;
+        else
+            return 0;
     }
 
     public void setDeviceName(Integer deviceName) {

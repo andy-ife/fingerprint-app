@@ -1,5 +1,6 @@
 package com.andyslab.biometric.service.data.localdb;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -16,14 +17,18 @@ import com.andyslab.biometric.service.model.BiometricTemplateFormat;
 public class FingerprintEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private int id;
 
     @Lob
+    @Column(name = "template")
     private String template;
 
+    @Column(name = "type")
     private String type;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "format")
     private BiometricTemplateFormat format;
 
     public FingerprintEntity() {

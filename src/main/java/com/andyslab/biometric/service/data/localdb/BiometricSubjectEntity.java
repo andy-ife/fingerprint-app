@@ -1,6 +1,7 @@
 package com.andyslab.biometric.service.data.localdb;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,8 +18,10 @@ import java.util.List;
 public class BiometricSubjectEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
 
+    @Column(name = "subject_id")
     private String subjectId;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
