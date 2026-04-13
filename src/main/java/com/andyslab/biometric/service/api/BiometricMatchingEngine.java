@@ -288,6 +288,7 @@ public class BiometricMatchingEngine {
     private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
         byte[] templateBytes = new byte[400];
         templateBytes = Base64.getDecoder().decode(fingerprint.getTemplate());
+        System.out.println("========== Byte array size: " + templateBytes.length);
         return new SSIdTemplatePair(fingerprint.getId(), templateBytes);
     }
 
