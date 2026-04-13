@@ -33,6 +33,7 @@ import javax.annotation.PreDestroy;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
 
@@ -96,7 +97,7 @@ public class BiometricMatchingEngine {
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
         } catch (Exception e) {
             System.err.println("Error enrolling subject: " + e.toString());
-            
+
         }
 
         return biometricSubject;
@@ -285,7 +286,9 @@ public class BiometricMatchingEngine {
     }
 
     private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
-        return new SSIdTemplatePair(fingerprint.getId(), fingerprint.getTemplate().getBytes());
+        byte[] templateBytes = new byte[400];
+        templateBytes = Base64.getDecoder().decode(fingerprint.getTemplate());
+        return new SSIdTemplatePair(fingerprint.getId(), templateBytes);
     }
 
     private int[] buildFingerprintIdList(List<Fingerprint> fingerprints) {

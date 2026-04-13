@@ -57,6 +57,7 @@ public class FingerprintScanningEngine {
     static private JSGFPLib client = null;
 
     private SGDeviceInfoParam deviceInfo = null;
+    private short secuGenTemplateFormat = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
 
     @PostConstruct
     public void init() {
@@ -187,7 +188,7 @@ public class FingerprintScanningEngine {
                 // Create Fingerprint model
                 fp.setTemplate(minBuffer.toString());
                 fp.setImage(buffer.toString());
-                fp.setFormat(BiometricTemplateFormat.SG400);
+                fp.setFormat(config.getTemplateFormat());
                 fp.setType(type);
             }
 
@@ -216,7 +217,8 @@ public class FingerprintScanningEngine {
         error = client.Init(SGFDxDeviceName.SG_DEV_AUTO);
         if (client != null && error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             // Set template format
-            client.SetTemplateFormat(SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400);
+            secuGenTemplateFormat = getSecuGenTemplateFormat(config.getTemplateFormat());
+            client.SetTemplateFormat(secuGenTemplateFormat);
 
             // Count Devices
             System.out.println("JSGFPLib Initialization Success");
@@ -239,7 +241,7 @@ public class FingerprintScanningEngine {
     private void initializeDevices() {
         deviceInfo = new SGDeviceInfoParam();
         client.OpenDevice(0);
-        client.SetTemplateFormat(SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400);
+        client.SetTemplateFormat(secuGenTemplateFormat);
 
         long error2 = client.GetDeviceInfo(deviceInfo);
 
@@ -281,6 +283,22 @@ public class FingerprintScanningEngine {
             default:
                 return SGFingerPosition.SG_FINGPOS_UK;
         }
+    }
+
+    private short getSecuGenTemplateFormat(BiometricTemplateFormat format) {
+        short result = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
+        switch (format) {
+            case SG400:
+                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
+                break;
+            case ANSI378:
+                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_ANSI378;
+                break;
+            case ISO19794:
+                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_ISO19794;
+                break;
+        }
+        return result;
     }
 
     /**

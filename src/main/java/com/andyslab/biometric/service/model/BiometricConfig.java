@@ -33,6 +33,7 @@ public class BiometricConfig implements Serializable {
     private Integer matchingThreshold;
     private MatchingSpeed matchingSpeed;
     private TemplateSize templateSize;
+    private BiometricTemplateFormat templateFormat;
     private Integer deviceName;
     private Integer ajpPort;
 
@@ -111,5 +112,13 @@ public class BiometricConfig implements Serializable {
 
     public void setAjpPort(Integer ajpPort) {
         this.ajpPort = ajpPort;
+    }
+
+    public BiometricTemplateFormat getTemplateFormat() {
+        return templateFormat;
+    }
+
+    public void setTemplateFormat(BiometricTemplateFormat templateFormat) {
+        this.templateFormat = templateFormat;
     }
 }
