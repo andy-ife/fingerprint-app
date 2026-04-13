@@ -17,7 +17,7 @@ import java.util.List;
 @Table(name = "biometric_subject")
 public class BiometricSubjectEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "id")
     private Long id;
 
@@ -25,7 +25,7 @@ public class BiometricSubjectEntity {
     private String subjectId;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "biometric_subject_id")
+    @JoinColumn(name = "biometric_subject_id", referencedColumnName = "id")
     private List<FingerprintEntity> fingerprints = new ArrayList<>();
 
     public BiometricSubjectEntity() {

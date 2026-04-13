@@ -31,6 +31,7 @@ import com.secugen.secusearch.api.SecuSearch;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -263,7 +264,7 @@ public class BiometricMatchingEngine {
 
             try {
                 boolean success = SecuSearch.getInstance().loadFPDB(db);
-                if (!success) {
+                if (new File(db).exists() && !success) {
                     // TODO: Somehow populate SecuSearch instance with backup db data
                     throw new BiometricServiceException("Error initializing fingerprint database");
                 }

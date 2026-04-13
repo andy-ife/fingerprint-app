@@ -16,7 +16,7 @@ import com.andyslab.biometric.service.model.BiometricTemplateFormat;
 @Table(name = "fingerprint")
 public class FingerprintEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(name = "id")
     private int id;
 
