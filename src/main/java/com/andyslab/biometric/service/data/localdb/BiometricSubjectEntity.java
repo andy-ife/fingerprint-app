@@ -3,30 +3,27 @@ package com.andyslab.biometric.service.data.localdb;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "biometric_subject")
+@Table(name = "biometric_subject", schema = "public")
 public class BiometricSubjectEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")
     private Long id;
 
     @Column(name = "subject_id")
     private String subjectId;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "biometric_subject_id", referencedColumnName = "id")
-    private List<FingerprintEntity> fingerprints = new ArrayList<>();
+    @OneToMany(mappedBy = "biometricSubject", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FingerprintEntity> fingerprints;
 
     public BiometricSubjectEntity() {
     }
@@ -61,5 +58,11 @@ public class BiometricSubjectEntity {
 
     public void addFingerprint(FingerprintEntity fingerprint) {
         this.fingerprints.add(fingerprint);
+        fingerprint.setBiometricSubject(this);
+    }
+
+    public void removeFingerprint(FingerprintEntity fingerprint) {
+        this.fingerprints.remove(fingerprint);
+        fingerprint.setBiometricSubject(null);
     }
 }

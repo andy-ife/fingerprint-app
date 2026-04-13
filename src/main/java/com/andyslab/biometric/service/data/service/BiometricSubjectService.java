@@ -33,7 +33,7 @@ public class BiometricSubjectService {
         List<BiometricSubjectEntity> entities = subjects.stream()
                 .map(this::mapToEntity)
                 .collect(Collectors.toList());
-        entities = subjectRepo.save(entities);
+        entities = subjectRepo.saveAll(entities);
         return entities.stream().map(this::mapToModel).collect(Collectors.toList());
     }
 

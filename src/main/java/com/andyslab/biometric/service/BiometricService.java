@@ -12,12 +12,13 @@ package com.andyslab.biometric.service;
 import org.apache.catalina.connector.Connector;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.coyote.ajp.AbstractAjpProtocol;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -58,15 +59,23 @@ public class BiometricService {
      * Enable an AJP connector if specified
      */
     @Bean
-    public EmbeddedServletContainerFactory servletContainer() {
-        TomcatEmbeddedServletContainerFactory tomcat = new TomcatEmbeddedServletContainerFactory();
+    public ServletWebServerFactory servletContainer() {
+        TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+
         if (getConfig().getAjpPort() != null) {
             Connector ajpConnector = new Connector("AJP/1.3");
-            ajpConnector.setProtocol("AJP/1.3");
             ajpConnector.setPort(getConfig().getAjpPort());
             ajpConnector.setSecure(false);
             ajpConnector.setAllowTrace(false);
             ajpConnector.setScheme("http");
+
+            // CRITICAL UPDATE FOR TOMCAT 9+ (Ghostcat vulnerability mitigation)
+            AbstractAjpProtocol<?> protocol = (AbstractAjpProtocol<?>) ajpConnector.getProtocolHandler();
+
+            // Set to true and use protocol.setSecret("your_secret") in production if
+            // possible
+            protocol.setSecretRequired(false);
+
             tomcat.addAdditionalTomcatConnectors(ajpConnector);
         }
 
