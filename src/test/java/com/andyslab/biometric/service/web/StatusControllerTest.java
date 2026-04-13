@@ -9,7 +9,6 @@
  */
 package com.andyslab.biometric.service.web;
 
-import org.junit.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -19,6 +18,8 @@ import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests the status REST controller

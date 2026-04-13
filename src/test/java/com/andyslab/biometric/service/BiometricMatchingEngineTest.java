@@ -9,7 +9,7 @@
  */
 package com.andyslab.biometric.service;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.andyslab.biometric.service.api.BiometricMatchingEngine;

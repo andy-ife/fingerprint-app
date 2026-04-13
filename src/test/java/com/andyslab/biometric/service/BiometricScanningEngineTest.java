@@ -9,8 +9,8 @@
  */
 package com.andyslab.biometric.service;
 
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.andyslab.biometric.service.api.FingerprintScanningEngine;
@@ -29,7 +29,7 @@ import java.util.List;
  * currently causes a core dump involving a usb library, assumedly, because it
  * doesn't have any USB ports)
  **/
-@Ignore
+//@Ignore
 public class BiometricScanningEngineTest extends BaseBiometricTest {
 
     @Autowired

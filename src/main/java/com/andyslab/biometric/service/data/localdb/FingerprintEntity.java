@@ -47,6 +47,12 @@ public class FingerprintEntity {
         this.template = template;
     }
 
+    public FingerprintEntity(String type, BiometricTemplateFormat format, String template) {
+        this.type = type;
+        this.format = format;
+        this.template = template;
+    }
+
     public int getId() {
         return id;
     }

@@ -9,6 +9,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,7 +25,7 @@ public class BiometricSubjectEntity {
     private String subjectId;
 
     @OneToMany(mappedBy = "biometricSubject", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FingerprintEntity> fingerprints;
+    private List<FingerprintEntity> fingerprints = new ArrayList<FingerprintEntity>();
 
     public BiometricSubjectEntity() {
     }

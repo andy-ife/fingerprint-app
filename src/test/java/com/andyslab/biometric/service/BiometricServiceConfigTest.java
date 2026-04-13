@@ -9,9 +9,7 @@
  */
 package com.andyslab.biometric.service;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -21,7 +19,7 @@ import com.andyslab.biometric.service.model.BiometricConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@RunWith(SpringRunner.class)
+//@RunWith(SpringRunner.class)
 @SpringBootTest
 public class BiometricServiceConfigTest extends BaseBiometricTest {
 
@@ -30,7 +28,7 @@ public class BiometricServiceConfigTest extends BaseBiometricTest {
 
     @Test
     public void contextLoadsWithDefaults() throws Exception {
-        Assert.assertNotNull(app);
+        // Assert.assertNotNull(app);
         BiometricConfig config = app.getConfig();
         assertThat(config.getMatchingThreshold(), is(72));
         assertThat(config.getMatchingSpeed(), is(BiometricConfig.MatchingSpeed.LOW));

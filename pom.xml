@@ -103,6 +103,14 @@
             <systemPath>${project.basedir}/lib/SecuSearch3SDKPro/lib/secusearch-api-3.2.4.jar</systemPath>
         </dependency>
 
+        <!-- H2 database -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>runtime</scope>
+        </dependency>
+
         <!-- SQLite support -->
         <dependency>
             <groupId>org.xerial</groupId>

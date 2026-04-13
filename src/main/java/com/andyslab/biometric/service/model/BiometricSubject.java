@@ -22,7 +22,7 @@ import java.util.List;
 public class BiometricSubject implements Serializable {
 
     private String subjectId;
-    private List<Fingerprint> fingerprints;
+    private List<Fingerprint> fingerprints = new ArrayList<Fingerprint>();
 
     public BiometricSubject() {
     }
@@ -40,19 +40,7 @@ public class BiometricSubject implements Serializable {
     }
 
     public List<Fingerprint> getFingerprints() {
-        if (fingerprints == null) {
-            fingerprints = new ArrayList<Fingerprint>();
-        }
         return fingerprints;
-    }
-
-    public int[] getFingerprintIds() {
-        int[] ids = new int[fingerprints.size()];
-
-        for (int i = 0; i < fingerprints.size(); i++) {
-            ids[i] = fingerprints.get(i).getId();
-        }
-        return ids;
     }
 
     public void setFingerprints(List<Fingerprint> fingerprints) {
@@ -60,6 +48,10 @@ public class BiometricSubject implements Serializable {
     }
 
     public void addFingerprint(Fingerprint fingerprint) {
-        getFingerprints().add(fingerprint);
+        fingerprints.add(fingerprint);
+    }
+
+    public void removeFingerprint(Fingerprint fingerprint) {
+        fingerprints.remove(fingerprint);
     }
 }

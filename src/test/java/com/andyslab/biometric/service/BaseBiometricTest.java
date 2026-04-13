@@ -17,8 +17,7 @@ import com.andyslab.biometric.service.model.Fingerprint;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Before;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +41,7 @@ import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppC
  * This requires valid neurotechnology component licenses to be placed in
  * ${user.home}/.pih-biometrics
  */
-@RunWith(SpringRunner.class)
+// @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { BaseBiometricTest.TestConfig.class })
 @WebAppConfiguration
 public abstract class BaseBiometricTest {
@@ -65,7 +64,7 @@ public abstract class BaseBiometricTest {
     @Autowired
     protected BiometricConfig config;
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         this.mockMvc = webAppContextSetup(webApplicationContext).build();
         if (DB_FILE.exists()) {

@@ -96,6 +96,7 @@ public class BiometricMatchingEngine {
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
         } catch (Exception e) {
             System.err.println("Error enrolling subject: " + e.toString());
+            
         }
 
         return biometricSubject;
@@ -119,7 +120,7 @@ public class BiometricMatchingEngine {
         try {
             BiometricSubject updatedSubject = backupDbService.updateSubject(biometricSubject);
             biometricSubject = updatedSubject;
-            SecuSearch.getInstance().removeFPBatch(updatedSubject.getFingerprintIds());
+            SecuSearch.getInstance().removeFPBatch(buildFingerprintIdList(updatedSubject.getFingerprints()));
             boolean success = SecuSearch.getInstance()
                     .registerFPBatch(updatedSubject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
                             .toArray(SSIdTemplatePair[]::new));
@@ -234,7 +235,7 @@ public class BiometricMatchingEngine {
         try {
             BiometricSubject subject = backupDbService.deleteBySubjectId(subjectId);
             if (subject != null) {
-                SecuSearch.getInstance().removeFPBatch(subject.getFingerprintIds());
+                SecuSearch.getInstance().removeFPBatch(buildFingerprintIdList(subject.getFingerprints()));
                 SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
             }
             log.debug("No saved biometrics found for subject: " + subjectId);
@@ -285,6 +286,15 @@ public class BiometricMatchingEngine {
 
     private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
         return new SSIdTemplatePair(fingerprint.getId(), fingerprint.getTemplate().getBytes());
+    }
+
+    private int[] buildFingerprintIdList(List<Fingerprint> fingerprints) {
+        int[] ids = new int[fingerprints.size()];
+
+        for (int i = 0; i < fingerprints.size(); i++) {
+            ids[i] = fingerprints.get(i).getId();
+        }
+        return ids;
     }
 
 }
