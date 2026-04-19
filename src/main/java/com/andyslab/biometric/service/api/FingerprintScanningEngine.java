@@ -93,31 +93,35 @@ public class FingerprintScanningEngine {
 
         log.debug("Retrieving fingerprint scanners...");
 
-        // Count devices
-        int[] ndevs = new int[1];
-        ndevs[0] = 0;
-        long error = client.CountDevices(ndevs, 2000);
-        if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
-            System.out.println("CountDevices() Success [" + error + "]");
-            System.out.println("# of devices: [" + ndevs[0] + "]");
+        if (client != null) {
+            // Count devices
+            int[] ndevs = new int[1];
+            ndevs[0] = 0;
+            long error = client.CountDevices(ndevs, 2000);
+            if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
+                System.out.println("CountDevices() Success [" + error + "]");
+                System.out.println("# of devices: [" + ndevs[0] + "]");
+            } else {
+                System.out.println("Error counting devices");
+            }
+
+            // Get devices
+            SGDeviceInfo[] devList = new SGDeviceInfo[ndevs[0]];
+            for (int i = 0; i < ndevs[0]; ++i)
+                devList[i] = new SGDeviceInfo();
+            error = client.FindDevices(devList, 1000);
+
+            List<BiometricScanner> ret = new ArrayList<>();
+            for (SGDeviceInfo device : devList) {
+                BiometricScanner scanner = new BiometricScanner();
+                scanner.setId(String.valueOf(device.ID));
+                scanner.setDisplayName(String.valueOf(device.Name));
+                ret.add(scanner);
+            }
+            return ret;
         } else {
-            System.out.println("Error counting devices");
+            return new ArrayList<BiometricScanner>();
         }
-
-        // Get devices
-        SGDeviceInfo[] devList = new SGDeviceInfo[ndevs[0]];
-        for (int i = 0; i < ndevs[0]; ++i)
-            devList[i] = new SGDeviceInfo();
-        error = client.FindDevices(devList, 1000);
-
-        List<BiometricScanner> ret = new ArrayList<>();
-        for (SGDeviceInfo device : devList) {
-            BiometricScanner scanner = new BiometricScanner();
-            scanner.setId(String.valueOf(device.ID));
-            scanner.setDisplayName(String.valueOf(device.Name));
-            ret.add(scanner);
-        }
-        return ret;
     }
 
     /**
@@ -240,10 +244,13 @@ public class FingerprintScanningEngine {
 
     private void initializeDevices() {
         deviceInfo = new SGDeviceInfoParam();
-        client.OpenDevice(0);
-        client.SetTemplateFormat(secuGenTemplateFormat);
+        long error2 = -1;
 
-        long error2 = client.GetDeviceInfo(deviceInfo);
+        if (client != null) {
+            client.OpenDevice(0);
+            client.SetTemplateFormat(secuGenTemplateFormat);
+            error2 = client.GetDeviceInfo(deviceInfo);
+        }
 
         if (error2 == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             deviceInfo.imageWidth = deviceInfo.imageWidth;
