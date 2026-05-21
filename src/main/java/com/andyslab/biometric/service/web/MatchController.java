@@ -11,9 +11,9 @@ package com.andyslab.biometric.service.web;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,6 +29,7 @@ import java.util.List;
  */
 @RestController
 @CrossOrigin
+@RequestMapping("/match")
 public class MatchController {
 
     @Autowired
@@ -38,7 +39,7 @@ public class MatchController {
      * @return matches for the given subject. This is essentially a search for a
      *         template, with resulting possible matches
      */
-    @RequestMapping(method = RequestMethod.POST, value = "/match")
+    @PostMapping
     @ResponseBody
     public List<BiometricMatch> match(@RequestBody BiometricSubject subject) {
         List<BiometricMatch> matches = new ArrayList<>();
