@@ -153,7 +153,7 @@ public class BiometricMatchingEngine {
 
         try {
             SSCandidate[] candidates = SecuSearch.getInstance()
-                    .searchFP(biometricSubject.getFingerprints().get(0).getTemplate().getBytes());
+                    .searchFP(Base64.getDecoder().decode(biometricSubject.getFingerprints().get(0).getTemplate()));
 
             if (candidates.length > 0) {
                 log.debug("Found " + candidates.length + " possible matches");
@@ -168,7 +168,7 @@ public class BiometricMatchingEngine {
                 throw new BiometricServiceException("Identification failed");
             }
         } catch (Exception e) {
-            System.err.println("Error updating subject: " + e.toString());
+            System.err.println("Error matching subject: " + e.toString());
         }
 
         return ret;
