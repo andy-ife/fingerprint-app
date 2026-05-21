@@ -84,7 +84,7 @@ public class BiometricSubjectService {
             if (subject.getFingerprints() != null) {
                 for (Fingerprint fingerprint : subject.getFingerprints()) {
                     FingerprintEntity fpEntity = new FingerprintEntity(
-                            fingerprint.getId(), fingerprint.getType(), fingerprint.getFormat(),
+                            fingerprint.getType(), fingerprint.getFormat(),
                             fingerprint.getTemplate());
                     entity.addFingerprint(fpEntity);
                 }
