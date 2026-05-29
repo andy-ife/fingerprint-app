@@ -183,7 +183,7 @@ public class BiometricMatchingEngine {
             int secuSearchDbNumber = SecuSearch.getInstance().getFPCount();
             int backupDbNumber = Integer.valueOf(backupDbService.getSubjectCount());
             if (secuSearchDbNumber != backupDbNumber) {
-                throw new BiometricServiceException("Fingerprint databases out of sync");
+                syncDatabases();
             }
             return backupDbNumber;
         } catch (Exception e) {
@@ -246,8 +246,6 @@ public class BiometricMatchingEngine {
         }
     }
 
-    // ***** CONVENIENCE METHODS *****
-
     private void terminateEngine() {
         try {
             SecuSearch.getInstance().terminateEngine();
@@ -284,6 +282,25 @@ public class BiometricMatchingEngine {
             System.out.println("Error creating biometric client: " + e.toString());
         }
     }
+
+    private void syncDatabases() {
+        try {
+            SecuSearch.getInstance().clearFPDB();
+            List<BiometricSubject> allSubjects = backupDbService.loadSubjects();
+
+            for (BiometricSubject subject : allSubjects) {
+                SecuSearch.getInstance()
+                        .registerFPBatch(subject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
+                                .toArray(SSIdTemplatePair[]::new));
+            }
+
+            SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
+        } catch (Exception e) {
+            System.out.println("Error syncing databases: " + e.toString());
+        }
+    }
+
+    // ***** CONVENIENCE METHODS *****
 
     private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
         byte[] templateBytes = new byte[400];

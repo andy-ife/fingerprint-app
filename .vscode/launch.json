@@ -15,7 +15,7 @@
             "name": "BiometricService",
             "request": "launch",
             "mainClass": "com.andyslab.biometric.service.BiometricService",
-            "projectName": "pih-biometrics",
+            "projectName": "sierra-leone-biometrics",
             "args": "--spring.config.location=file:.\\config\\application.yml",
         }
     ]

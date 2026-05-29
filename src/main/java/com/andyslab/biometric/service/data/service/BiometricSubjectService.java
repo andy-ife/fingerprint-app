@@ -85,7 +85,7 @@ public class BiometricSubjectService {
                 for (Fingerprint fingerprint : subject.getFingerprints()) {
                     FingerprintEntity fpEntity = new FingerprintEntity(
                             fingerprint.getType(), fingerprint.getFormat(),
-                            fingerprint.getTemplate());
+                            fingerprint.getTemplate(), fingerprint.getImage());
                     entity.addFingerprint(fpEntity);
                 }
             }
@@ -119,6 +119,7 @@ public class BiometricSubjectService {
                 fingerprint.setType(fpEntity.getType());
                 fingerprint.setFormat(fpEntity.getFormat());
                 fingerprint.setTemplate(fpEntity.getTemplate());
+                fingerprint.setImage(fpEntity.getImage());
                 subject.addFingerprint(fingerprint);
             }
         }
@@ -130,7 +131,8 @@ public class BiometricSubjectService {
         if (subject.getFingerprints() != null) {
             for (Fingerprint fingerprint : subject.getFingerprints()) {
                 FingerprintEntity fpEntity = new FingerprintEntity(
-                        fingerprint.getType(), fingerprint.getFormat(), fingerprint.getTemplate());
+                        fingerprint.getType(), fingerprint.getFormat(), fingerprint.getTemplate(),
+                        fingerprint.getImage());
                 entity.addFingerprint(fpEntity);
             }
         }

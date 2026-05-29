@@ -26,10 +26,14 @@ public class Fingerprint extends BiometricSample {
     }
 
     public String getImage() {
+        if (image == null)
+            return "";
         return image;
     }
 
     public void setImage(String image) {
+        if (image == null)
+            return;
         this.image = image;
     }
 }
