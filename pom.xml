@@ -92,7 +92,7 @@
             <artifactId>fdxsdkpro</artifactId>
             <version>1.21</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/FDxSDKPro/FDxSDKPro_jdk1.8.0_422.jar</systemPath>
+            <systemPath>${project.basedir}/lib/FDxSDKPro_jdk1.8.0_422.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -100,7 +100,7 @@
             <artifactId>secusearch-api</artifactId>
             <version>3.2.4</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/SecuSearch3SDKPro/lib/secusearch-api-3.2.4.jar</systemPath>
+            <systemPath>${project.basedir}/lib/secusearch-api-3.2.4.jar</systemPath>
         </dependency>
 
         <!-- H2 database -->
