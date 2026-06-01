@@ -26,9 +26,10 @@ public class FingerprintEntity {
     @Column(name = "template")
     private String template;
 
-    @Lob
-    @Column(name = "image")
-    private String image;
+    // We shouldn't store fingerprint images
+    // @Lob
+    // @Column(name = "image")
+    // private String image;
 
     @Column(name = "type")
     private String type;
@@ -51,11 +52,11 @@ public class FingerprintEntity {
         this.template = template;
     }
 
-    public FingerprintEntity(String type, BiometricTemplateFormat format, String template, String image) {
+    public FingerprintEntity(String type, BiometricTemplateFormat format, String template) {
         this.type = type;
         this.format = format;
         this.template = template;
-        this.image = image;
+        // this.image = image;
     }
 
     public int getId() {
@@ -74,17 +75,17 @@ public class FingerprintEntity {
         this.template = template;
     }
 
-    public String getImage() {
-        if (image == null)
-            return "";
-        return image;
-    }
+    // public String getImage() {
+    // if (image == null)
+    // return "";
+    // return image;
+    // }
 
-    public void setImage(String image) {
-        if (image == null)
-            return;
-        this.image = image;
-    }
+    // public void setImage(String image) {
+    // if (image == null)
+    // return;
+    // this.image = image;
+    // }
 
     public String getType() {
         return type;
