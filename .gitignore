@@ -18,3 +18,9 @@ db/
 
 ### Jars
 bin/
+
+### Error Logs
+**hs_err_pid*.log
+
+### Secugen generated files
+.sgfplib_config.ini
