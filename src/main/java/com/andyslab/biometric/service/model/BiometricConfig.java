@@ -36,6 +36,7 @@ public class BiometricConfig implements Serializable {
     private BiometricTemplateFormat templateFormat;
     private Integer deviceName;
     private Integer ajpPort;
+    private Integer comPort;
 
     // ***** PROPERTY ACCESS *****
 
@@ -120,5 +121,13 @@ public class BiometricConfig implements Serializable {
 
     public void setTemplateFormat(BiometricTemplateFormat templateFormat) {
         this.templateFormat = templateFormat;
+    }
+
+    public Integer getComPort() {
+        return comPort;
+    }
+
+    public void setComPort(Integer comPort) {
+        this.comPort = comPort;
     }
 }
