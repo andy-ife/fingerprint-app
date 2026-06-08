@@ -12,6 +12,7 @@ package com.andyslab.biometric.service.api;
 import SecuGen.FDxSDKPro.jni.JSGFPLib;
 import SecuGen.FDxSDKPro.jni.SGDeviceInfo;
 import SecuGen.FDxSDKPro.jni.SGDeviceInfoParam;
+import SecuGen.FDxSDKPro.jni.SGDeviceList;
 import SecuGen.FDxSDKPro.jni.SGFDxDeviceName;
 import SecuGen.FDxSDKPro.jni.SGFDxErrorCode;
 import SecuGen.FDxSDKPro.jni.SGFDxTemplateFormat;
@@ -95,28 +96,30 @@ public class FingerprintScanningEngine {
         log.debug("Retrieving fingerprint scanners...");
 
         if (client != null) {
+            long error = -1;
             // Count devices
             int[] ndevs = new int[1];
             ndevs[0] = 0;
-            long error = client.CountDevices(ndevs, 2000);
+            SGDeviceList[] devList = new SGDeviceList[1];
+            devList[0] = new SGDeviceList();
+
+            error = client.EnumerateDevice(ndevs, devList);
             if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
-                System.out.println("CountDevices() Success [" + error + "]");
-                System.out.println("# of devices: [" + ndevs[0] + "]");
+                System.out.println("EnumerateDevice() Success [" + error + "]");
+                System.out
+                        .println("# of devices: [" + devList[0].devID + " " + devList[0].devName + " "
+                                + devList[0].devType + "]");
             } else {
                 System.out.println("Error counting devices");
             }
 
-            // Get devices
-            SGDeviceInfo[] devList = new SGDeviceInfo[ndevs[0]];
-            for (int i = 0; i < ndevs[0]; ++i)
-                devList[i] = new SGDeviceInfo();
-            error = client.FindDevices(devList, 1000);
-
             List<BiometricScanner> ret = new ArrayList<>();
-            for (SGDeviceInfo device : devList) {
+            for (SGDeviceList device : devList) {
                 BiometricScanner scanner = new BiometricScanner();
-                scanner.setId(String.valueOf(device.ID));
-                scanner.setDisplayName(String.valueOf(device.Name));
+                scanner.setId(String.valueOf(device.devID));
+                scanner.setDisplayName(String.valueOf(getDeviceName(device.devName)));
+                scanner.setImageHeight(deviceInfo.imageHeight);
+                scanner.setImageWidth(deviceInfo.imageWidth);
                 ret.add(scanner);
             }
             return ret;
@@ -250,10 +253,15 @@ public class FingerprintScanningEngine {
             System.out.println("JSGFPLib Initialization Success");
             int[] ndevs = new int[1];
             ndevs[0] = 0;
-            error = client.CountDevices(ndevs, 1000);
+            SGDeviceList[] devList = new SGDeviceList[1];
+            devList[0] = new SGDeviceList();
+
+            error = client.EnumerateDevice(ndevs, devList);
             if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
-                System.out.println("CountDevices() Success [" + error + "]");
-                System.out.println("# of devices: [" + ndevs[0] + "]");
+                System.out.println("EnumerateDevice() Success [" + error + "]");
+                System.out
+                        .println("# of devices: [" + devList[0].devID + " " + devList[0].devName + " "
+                                + devList[0].devType + "]");
             } else {
                 System.out.println("Error counting devices");
             }
@@ -314,6 +322,47 @@ public class FingerprintScanningEngine {
             default:
                 return SGFingerPosition.SG_FINGPOS_UK;
         }
+    }
+
+    public static String getDeviceName(long value) {
+        String driverWithText;
+
+        if (value == SGFDxDeviceName.SG_DEV_UNKNOWN) {
+            driverWithText = "Default";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU02) {
+            driverWithText = "FDU02 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU03) {
+            driverWithText = "FDU03 / SDU03 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU04) {
+            driverWithText = "FDU04 / SDU04 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU05) {
+            driverWithText = "U20 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU06) {
+            driverWithText = "UPx USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU06AP) {
+            driverWithText = "UPx-AP USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU07) {
+            driverWithText = "U10 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU08) {
+            driverWithText = "U20-A USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU08A) {
+            driverWithText = "U20-AP USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU09A) {
+            driverWithText = "U30 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU10A) {
+            driverWithText = "U-Air USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA) {
+            driverWithText = "U20-ASF-BT (Bluetooth SPP) driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA_BLE) {
+            driverWithText = "U20-ASF-BT (Bluetooth BLE) driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_AUTO) {
+            driverWithText = "Auto-detected";
+        } else {
+            driverWithText = "Unknown Device";
+        }
+
+        // Strip the word "driver" and trim spaces
+        return driverWithText.replaceAll("(?i)\\bdriver\\b", "").trim();
     }
 
     private short getSecuGenTemplateFormat(BiometricTemplateFormat format) {
