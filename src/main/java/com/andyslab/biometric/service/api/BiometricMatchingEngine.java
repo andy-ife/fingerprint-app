@@ -158,9 +158,10 @@ public class BiometricMatchingEngine {
             if (candidates.length > 0) {
                 log.debug("Found " + candidates.length + " possible matches");
                 for (SSCandidate candidate : candidates) {
-                    ret.add(new BiometricMatch(
-                            backupDbService.getSubjectByFingerprintId(candidate.getId()).getSubjectId(),
-                            candidate.getMatchScore()));
+                    if (candidate.getMatchScore() >= config.getMatchingThreshold())
+                        ret.add(new BiometricMatch(
+                                backupDbService.getSubjectByFingerprintId(candidate.getId()).getSubjectId(),
+                                candidate.getMatchScore()));
                 }
             } else if (candidates.length == 0) {
                 log.debug("No match found");
