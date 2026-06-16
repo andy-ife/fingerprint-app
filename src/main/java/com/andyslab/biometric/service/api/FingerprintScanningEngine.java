@@ -164,7 +164,7 @@ public class FingerprintScanningEngine {
 
         try {
             byte[] buffer = new byte[deviceInfo.imageWidth * deviceInfo.imageHeight];
-            long targetQuality = config.getMatchingThreshold();
+            long targetQuality = config.getScanningThreshold();
             int[] actualQuality = new int[1];
             log.debug("Capturing fingerprint...");
 

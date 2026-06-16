@@ -31,6 +31,7 @@ public class BiometricConfig implements Serializable {
     private String licenseFilePath;
     private String sqliteDatabasePath;
     private Integer matchingThreshold;
+    private Integer scanningThreshold;
     private MatchingSpeed matchingSpeed;
     private TemplateSize templateSize;
     private BiometricTemplateFormat templateFormat;
@@ -120,5 +121,13 @@ public class BiometricConfig implements Serializable {
 
     public void setTemplateFormat(BiometricTemplateFormat templateFormat) {
         this.templateFormat = templateFormat;
+    }
+
+    public Integer getScanningThreshold() {
+        return scanningThreshold;
+    }
+
+    public void setScanningThreshold(Integer scanningThreshold) {
+        this.scanningThreshold = scanningThreshold;
     }
 }

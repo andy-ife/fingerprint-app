@@ -1,6 +1,7 @@
 fingerprintScanningEnabled: 
 matchingServiceEnabled: 
-matchingThreshold: 
+matchingThreshold:
+scanningThreshold: 
 matchingSpeed: 
 templateSize: 
 templateFormat: 
