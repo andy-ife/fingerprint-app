@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.andyslab</groupId>
@@ -15,7 +16,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.18</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath /> <!-- lookup parent from repository -->
     </parent>
 
     <properties>
@@ -27,8 +28,10 @@
     <dependencies>
 
         <!--
-            Spring boot is very convention-over-configuration driven.  One aspect of this is that, if it finds certain
-            classes on the classpath, then it will try to set up the environment to use them in an opinionated way.
+            Spring boot is very convention-over-configuration driven.  One aspect of this is that, if it finds
+        certain
+            classes on the classpath, then it will try to set up the environment to use them in an opinionated
+        way.
             So, the libraries we add need to be done with this in mind.
         -->
 
@@ -62,6 +65,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
         <!-- commons -->
@@ -103,7 +110,7 @@
             <systemPath>${project.basedir}/lib/secusearch-api-3.2.4.jar</systemPath>
         </dependency>
 
-        <!-- H2 database -->
+        <!-- H2 -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -115,6 +122,14 @@
             <groupId>net.java.dev.jna</groupId>
             <artifactId>jna</artifactId>
             <version>4.2.2</version>
+        </dependency>
+
+        <!-- Caffeine -->
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>2.9.3</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 
@@ -167,7 +182,8 @@
                     passed on the command line.
                     Instructions for creating a key:
                     https://central.sonatype.org/pages/working-with-pgp-signatures.html
-                    Command to run: clean deploy -U -DdeployRelease -Dgpg.passphrase=*** -Dgpg.keyname=[email_address_associated_with_generated_key]
+                    Command to run: clean deploy -U -DdeployRelease -Dgpg.passphrase=***
+                    -Dgpg.keyname=[email_address_associated_with_generated_key]
                     -->
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>

@@ -26,19 +26,24 @@ public class BiometricConfig implements Serializable {
 
     // ****** PROPERTIES *****
 
-    private boolean matchingServiceEnabled = false;
-    private boolean fingerprintScanningEnabled = true;
-    private String licenseFilePath;
-    private String sqliteDatabasePath;
-    private Integer matchingThreshold;
-    private Integer scanningThreshold;
-    private Integer scanConfirmationCount;
-    private Integer scanTimeoutMs;
-    private MatchingSpeed matchingSpeed;
     private TemplateSize templateSize;
     private BiometricTemplateFormat templateFormat;
     private Integer deviceName;
     private Integer impressionType;
+
+    private boolean fingerprintScanningEnabled = true;
+    private Integer scanConfirmationCount;
+    private Integer scanningThreshold;
+    private Integer scanTimeoutMs;
+    private Integer scanSessionTimeoutMs;
+
+    private boolean matchingServiceEnabled = false;
+    private Integer matchingThreshold;
+    private MatchingSpeed matchingSpeed;
+
+    private String licenseFilePath;
+    private String sqliteDatabasePath;
+
     private Integer ajpPort;
 
     // ***** PROPERTY ACCESS *****
@@ -156,5 +161,13 @@ public class BiometricConfig implements Serializable {
 
     public void setImpressionType(Integer impressionType) {
         this.impressionType = impressionType;
+    }
+
+    public Integer getScanSessionTimeoutMs() {
+        return scanSessionTimeoutMs;
+    }
+
+    public void setScanSessionTimeoutMs(Integer scanSessionTimeoutMs) {
+        this.scanSessionTimeoutMs = scanSessionTimeoutMs;
     }
 }

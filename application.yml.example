@@ -9,6 +9,7 @@ fingerprintScanningEnabled: "true"
 scanConfirmationCount: 3
 scanningThreshold: 80
 scanTimeoutMs: 15000
+scanSessionTimeoutMs: 600000
 
 # Matching
 matchingServiceEnabled: "true"
@@ -19,7 +20,7 @@ matchingSpeed: "LOW"
 sqliteDatabasePath: "db/secugen.db"
 licenseFilePath: "config/license.dat"
 
-# Spring & H2
+# Spring, H2, Caffeine
 server:
   port: 8081
 
@@ -36,3 +37,7 @@ spring:
   h2:
     console:
       enabled: true
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=10m

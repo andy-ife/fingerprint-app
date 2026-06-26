@@ -19,13 +19,18 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.caffeine.CaffeineCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.andyslab.biometric.service.model.BiometricConfig;
+import com.github.benmanes.caffeine.cache.Caffeine;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This is the main class that starts up the application.
@@ -45,6 +50,7 @@ import java.lang.management.RuntimeMXBean;
 @SpringBootApplication
 @EnableConfigurationProperties
 @Configuration
+@EnableCaching
 public class BiometricService {
 
     private static final Log log = LogFactory.getLog(BiometricService.class);
@@ -53,6 +59,16 @@ public class BiometricService {
     @Bean
     public BiometricConfig getConfig() {
         return new BiometricConfig();
+    }
+
+    @Bean
+    public CacheManager cacheManager(BiometricConfig config) {
+        CaffeineCacheManager manager = new CaffeineCacheManager("scanSessionCache");
+        manager.setCaffeine(
+                Caffeine.newBuilder()
+                        .expireAfterWrite(config.getScanSessionTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .maximumSize(1000));
+        return manager;
     }
 
     /**
