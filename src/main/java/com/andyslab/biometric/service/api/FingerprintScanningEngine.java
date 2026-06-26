@@ -12,9 +12,7 @@ package com.andyslab.biometric.service.api;
 import SecuGen.FDxSDKPro.jni.JSGFPLib;
 import SecuGen.FDxSDKPro.jni.SGDeviceInfoParam;
 import SecuGen.FDxSDKPro.jni.SGDeviceList;
-import SecuGen.FDxSDKPro.jni.SGFDxDeviceName;
 import SecuGen.FDxSDKPro.jni.SGFDxErrorCode;
-import SecuGen.FDxSDKPro.jni.SGFDxTemplateFormat;
 import SecuGen.FDxSDKPro.jni.SGFingerInfo;
 import SecuGen.FDxSDKPro.jni.SGFingerPosition;
 import SecuGen.FDxSDKPro.jni.SGImpressionType;
@@ -30,7 +28,6 @@ import com.andyslab.biometric.service.exception.DeviceTimeoutException;
 import com.andyslab.biometric.service.exception.ServiceNotEnabledException;
 import com.andyslab.biometric.service.model.BiometricConfig;
 import com.andyslab.biometric.service.model.BiometricScanner;
-import com.andyslab.biometric.service.model.BiometricTemplateFormat;
 import com.andyslab.biometric.service.model.Fingerprint;
 
 import javax.annotation.PostConstruct;
@@ -112,7 +109,7 @@ public class FingerprintScanningEngine {
             for (SGDeviceList device : devList) {
                 BiometricScanner scanner = new BiometricScanner();
                 scanner.setId(String.valueOf(device.devID));
-                scanner.setDisplayName(String.valueOf(getDeviceName(device.devName)));
+                scanner.setDisplayName(String.valueOf(Helper.getDeviceDislayName(device.devName)));
                 scanner.setImageHeight(deviceInfo.imageHeight);
                 scanner.setImageWidth(deviceInfo.imageWidth);
                 ret.add(scanner);
@@ -181,7 +178,7 @@ public class FingerprintScanningEngine {
                 if (type == null) {
                     fingerInfo.FingerNumber = SGFingerPosition.SG_FINGPOS_UK;
                 } else {
-                    fingerInfo.FingerNumber = getFingerPosition(Integer.valueOf(type));
+                    fingerInfo.FingerNumber = Helper.getFingerPosition(Integer.valueOf(type));
                 }
                 fingerInfo.ViewNumber = 1;
                 fingerInfo.ImpressionType = SGImpressionType.SG_IMPTYPE_LP;
@@ -231,7 +228,7 @@ public class FingerprintScanningEngine {
 
     }
 
-    // ***** CONVENIENCE METHODS *****
+    // ***** LIFECYCLE METHODS *****
     /**
      * @return Biometric client, configured with appropriate properties from
      *         configuration
@@ -239,10 +236,10 @@ public class FingerprintScanningEngine {
     private void initializeClient() {
         client = new JSGFPLib();
         long error = client.Open();
-        error = client.Init(SGFDxDeviceName.SG_DEV_FDU05); // hamster u20
+        error = client.Init(config.getDeviceName()); // hamster u20
         if (client != null && error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             // Set template format
-            client.SetTemplateFormat(getSecuGenTemplateFormat(config.getTemplateFormat()));
+            client.SetTemplateFormat(Helper.getSecuGenTemplateFormat(config.getTemplateFormat()));
 
             // Count Devices
             System.out.println("JSGFPLib Initialization Success");
@@ -279,7 +276,7 @@ public class FingerprintScanningEngine {
                 return;
             }
             client.OpenDevice(Long.parseLong(scanners.get(0).getId()));
-            client.SetTemplateFormat(getSecuGenTemplateFormat(config.getTemplateFormat()));
+            client.SetTemplateFormat(Helper.getSecuGenTemplateFormat(config.getTemplateFormat()));
             error = client.GetDeviceInfo(deviceInfo);
         }
 
@@ -292,93 +289,6 @@ public class FingerprintScanningEngine {
             System.err.println("Device Initialization Error");
 
         }
-    }
-
-    /**
-     * Maps the integer type to one of the SGFingerPosition constants.
-     */
-    private int getFingerPosition(int type) {
-        switch (type) {
-            case SGFingerPosition.SG_FINGPOS_RT:
-                return SGFingerPosition.SG_FINGPOS_RT;
-            case SGFingerPosition.SG_FINGPOS_RI:
-                return SGFingerPosition.SG_FINGPOS_RI;
-            case SGFingerPosition.SG_FINGPOS_RM:
-                return SGFingerPosition.SG_FINGPOS_RM;
-            case SGFingerPosition.SG_FINGPOS_RR:
-                return SGFingerPosition.SG_FINGPOS_RR;
-            case SGFingerPosition.SG_FINGPOS_RL:
-                return SGFingerPosition.SG_FINGPOS_RL;
-            case SGFingerPosition.SG_FINGPOS_LT:
-                return SGFingerPosition.SG_FINGPOS_LT;
-            case SGFingerPosition.SG_FINGPOS_LI:
-                return SGFingerPosition.SG_FINGPOS_LI;
-            case SGFingerPosition.SG_FINGPOS_LM:
-                return SGFingerPosition.SG_FINGPOS_LM;
-            case SGFingerPosition.SG_FINGPOS_LR:
-                return SGFingerPosition.SG_FINGPOS_LR;
-            case SGFingerPosition.SG_FINGPOS_LL:
-                return SGFingerPosition.SG_FINGPOS_LL;
-            default:
-                return SGFingerPosition.SG_FINGPOS_UK;
-        }
-    }
-
-    public static String getDeviceName(long value) {
-        String driverWithText;
-
-        if (value == SGFDxDeviceName.SG_DEV_UNKNOWN) {
-            driverWithText = "Default";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU02) {
-            driverWithText = "FDU02 USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU03) {
-            driverWithText = "FDU03 / SDU03 USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU04) {
-            driverWithText = "FDU04 / SDU04 USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU05) {
-            driverWithText = "U20 USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU06) {
-            driverWithText = "UPx USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU06AP) {
-            driverWithText = "UPx-AP USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU07) {
-            driverWithText = "U10 USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU08) {
-            driverWithText = "U20-A USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU08A) {
-            driverWithText = "U20-AP USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU09A) {
-            driverWithText = "U30 USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDU10A) {
-            driverWithText = "U-Air USB driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA) {
-            driverWithText = "U20-ASF-BT (Bluetooth SPP) driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA_BLE) {
-            driverWithText = "U20-ASF-BT (Bluetooth BLE) driver";
-        } else if (value == SGFDxDeviceName.SG_DEV_AUTO) {
-            driverWithText = "Auto-detected";
-        } else {
-            driverWithText = "Unknown Device";
-        }
-
-        // Strip the word "driver" and trim spaces
-        return driverWithText.replaceAll("(?i)\\bdriver\\b", "").trim();
-    }
-
-    private short getSecuGenTemplateFormat(BiometricTemplateFormat format) {
-        short result = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
-        switch (format) {
-            case SG400:
-                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
-                break;
-            case ANSI378:
-                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_ANSI378;
-                break;
-            case ISO19794:
-                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_ISO19794;
-                break;
-        }
-        return result;
     }
 
     /**

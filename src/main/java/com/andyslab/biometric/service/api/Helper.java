@@ -1,0 +1,96 @@
+package com.andyslab.biometric.service.api;
+
+import com.andyslab.biometric.service.model.BiometricTemplateFormat;
+
+import SecuGen.FDxSDKPro.jni.SGFDxDeviceName;
+import SecuGen.FDxSDKPro.jni.SGFDxTemplateFormat;
+import SecuGen.FDxSDKPro.jni.SGFingerPosition;
+
+public class Helper {
+    /**
+     * Maps the integer type to one of the SGFingerPosition constants.
+     */
+    public static int getFingerPosition(int type) {
+        switch (type) {
+            case SGFingerPosition.SG_FINGPOS_RT:
+                return SGFingerPosition.SG_FINGPOS_RT;
+            case SGFingerPosition.SG_FINGPOS_RI:
+                return SGFingerPosition.SG_FINGPOS_RI;
+            case SGFingerPosition.SG_FINGPOS_RM:
+                return SGFingerPosition.SG_FINGPOS_RM;
+            case SGFingerPosition.SG_FINGPOS_RR:
+                return SGFingerPosition.SG_FINGPOS_RR;
+            case SGFingerPosition.SG_FINGPOS_RL:
+                return SGFingerPosition.SG_FINGPOS_RL;
+            case SGFingerPosition.SG_FINGPOS_LT:
+                return SGFingerPosition.SG_FINGPOS_LT;
+            case SGFingerPosition.SG_FINGPOS_LI:
+                return SGFingerPosition.SG_FINGPOS_LI;
+            case SGFingerPosition.SG_FINGPOS_LM:
+                return SGFingerPosition.SG_FINGPOS_LM;
+            case SGFingerPosition.SG_FINGPOS_LR:
+                return SGFingerPosition.SG_FINGPOS_LR;
+            case SGFingerPosition.SG_FINGPOS_LL:
+                return SGFingerPosition.SG_FINGPOS_LL;
+            default:
+                return SGFingerPosition.SG_FINGPOS_UK;
+        }
+    }
+
+    public static String getDeviceDislayName(long value) {
+        String driverWithText;
+
+        if (value == SGFDxDeviceName.SG_DEV_UNKNOWN) {
+            driverWithText = "Default";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU02) {
+            driverWithText = "FDU02 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU03) {
+            driverWithText = "FDU03 / SDU03 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU04) {
+            driverWithText = "FDU04 / SDU04 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU05) {
+            driverWithText = "U20 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU06) {
+            driverWithText = "UPx USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU06AP) {
+            driverWithText = "UPx-AP USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU07) {
+            driverWithText = "U10 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU08) {
+            driverWithText = "U20-A USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU08A) {
+            driverWithText = "U20-AP USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU09A) {
+            driverWithText = "U30 USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDU10A) {
+            driverWithText = "U-Air USB driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA) {
+            driverWithText = "U20-ASF-BT (Bluetooth SPP) driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA_BLE) {
+            driverWithText = "U20-ASF-BT (Bluetooth BLE) driver";
+        } else if (value == SGFDxDeviceName.SG_DEV_AUTO) {
+            driverWithText = "Auto-detected";
+        } else {
+            driverWithText = "Unknown Device";
+        }
+
+        // Strip the word "driver" and trim spaces
+        return driverWithText.replaceAll("(?i)\\bdriver\\b", "").trim();
+    }
+
+    public static short getSecuGenTemplateFormat(BiometricTemplateFormat format) {
+        short result = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
+        switch (format) {
+            case SG400:
+                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
+                break;
+            case ANSI378:
+                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_ANSI378;
+                break;
+            case ISO19794:
+                result = SGFDxTemplateFormat.TEMPLATE_FORMAT_ISO19794;
+                break;
+        }
+        return result;
+    }
+}

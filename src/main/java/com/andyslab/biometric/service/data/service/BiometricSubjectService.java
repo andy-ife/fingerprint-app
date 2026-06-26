@@ -117,7 +117,6 @@ public class BiometricSubjectService {
                 fingerprint.setType(fpEntity.getType());
                 fingerprint.setFormat(fpEntity.getFormat());
                 fingerprint.setTemplate(fpEntity.getTemplate());
-                // fingerprint.setImage(fpEntity.getImage());
                 subject.addFingerprint(fingerprint);
             }
         }

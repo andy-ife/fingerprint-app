@@ -14,7 +14,7 @@ import java.io.Serializable;
 /**
  * Represents a sample of biometric data for a person
  * type: represents an implementation-configurable representation of the given
- * sample (eg. "LEFT_MIDDLE_FINGER")
+ * sample (eg. "LEFT_MIDDLE_FINGER" for fingerprints)
  * format: represents the standard used to represent the template, ISO, ANSI,
  * etc
  * template: the textual representation of the sample, generally Base64 encoded

@@ -1,10 +1,13 @@
-# Scanning
-fingerprintScanningEnabled: "true"
-scanConfirmationCout: 3
-scanningThreshold: 80
-scanTimeoutMs: 15000
+# Device/Scanner
 templateSize: "LARGE"
 templateFormat: "SG400"
+deviceName: 6 # 6 here means Hamster U20 fp scanner. Get your device name from the device manual
+
+# Scanning
+fingerprintScanningEnabled: "true"
+scanConfirmationCount: 3
+scanningThreshold: 80
+scanTimeoutMs: 15000
 
 # Matching
 matchingServiceEnabled: "true"
