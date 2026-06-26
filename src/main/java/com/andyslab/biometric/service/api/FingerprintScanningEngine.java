@@ -120,15 +120,16 @@ public class FingerprintScanningEngine {
      * Scans a fingerprint.
      */
     public Fingerprint scanFingerprint() {
-        return scanFingerprint(null);
+        return scanFingerprint(null, "1", null);
     }
 
     /**
      * Scans a fingerprint using the given device, associating with the finger(s) of
      * the given type
-     * Type is String.valueOf(SGFingerPosition)
+     * type is String.valueOf(SGFingerPosition)
+     * viewNumber is the iteration of the fingerprint for the current scan session
      */
-    public synchronized Fingerprint scanFingerprint(String type) {
+    public synchronized Fingerprint scanFingerprint(String type, String viewNumber, String sessionId) {
         Fingerprint fp = new Fingerprint();
 
         if (!config.isFingerprintScanningEnabled()) {
@@ -173,7 +174,7 @@ public class FingerprintScanningEngine {
                 } else {
                     fingerInfo.FingerNumber = Helper.getFingerPosition(Integer.valueOf(type));
                 }
-                fingerInfo.ViewNumber = 1;
+                fingerInfo.ViewNumber = Integer.valueOf(viewNumber);
                 fingerInfo.ImpressionType = Helper.getImpressionType(impressionType);
                 client.GetImageQuality(deviceInfo.imageWidth, deviceInfo.imageHeight, buffer,
                         actualQuality);
@@ -216,6 +217,7 @@ public class FingerprintScanningEngine {
             deviceInfo = null;
             throw new BiometricServiceException("Error capturing fingerprint:", e);
         }
+        // TODO: Cache fp here with session id
         return fp;
     }
 

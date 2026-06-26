@@ -53,7 +53,10 @@ public class FingerprintScanController {
      */
     @RequestMapping(method = RequestMethod.GET, value = "/scan")
     @ResponseBody
-    public Fingerprint scan(@RequestParam(required = false) String type) {
-        return engine.scanFingerprint(type);
+    public Fingerprint scan(
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String viewNumber,
+            @RequestParam(required = false) String sessionId) {
+        return engine.scanFingerprint(type, viewNumber, sessionId);
     }
 }
