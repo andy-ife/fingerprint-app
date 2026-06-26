@@ -1,6 +1,14 @@
 package com.andyslab.biometric.service.api;
 
+import java.util.Base64;
+import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import com.andyslab.biometric.service.model.BiometricTemplateFormat;
+import com.andyslab.biometric.service.model.Fingerprint;
+import com.secugen.secusearch.api.SSIdTemplatePair;
 
 import SecuGen.FDxSDKPro.jni.SGFDxDeviceName;
 import SecuGen.FDxSDKPro.jni.SGFDxTemplateFormat;
@@ -38,45 +46,44 @@ public class Helper {
         }
     }
 
-    public static String getDeviceDislayName(long value) {
+    public static String getDeviceDisplayName(long value) {
         String driverWithText;
 
         if (value == SGFDxDeviceName.SG_DEV_UNKNOWN) {
-            driverWithText = "Default";
+            driverWithText = "Generic Fp Scanner";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU02) {
-            driverWithText = "FDU02 USB driver";
+            driverWithText = "FDU02 USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU03) {
-            driverWithText = "FDU03 / SDU03 USB driver";
+            driverWithText = "FDU03 / SDU03 USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU04) {
-            driverWithText = "FDU04 / SDU04 USB driver";
+            driverWithText = "FDU04 / SDU04 USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU05) {
-            driverWithText = "U20 USB driver";
+            driverWithText = "U20 USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU06) {
-            driverWithText = "UPx USB driver";
+            driverWithText = "UPx USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU06AP) {
-            driverWithText = "UPx-AP USB driver";
+            driverWithText = "UPx-AP USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU07) {
-            driverWithText = "U10 USB driver";
+            driverWithText = "U10 USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU08) {
-            driverWithText = "U20-A USB driver";
+            driverWithText = "U20-A USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU08A) {
-            driverWithText = "U20-AP USB driver";
+            driverWithText = "U20-AP USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU09A) {
-            driverWithText = "U30 USB driver";
+            driverWithText = "U30 USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDU10A) {
-            driverWithText = "U-Air USB driver";
+            driverWithText = "U-Air USB";
         } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA) {
-            driverWithText = "U20-ASF-BT (Bluetooth SPP) driver";
+            driverWithText = "U20-ASF-BT (Bluetooth SPP)";
         } else if (value == SGFDxDeviceName.SG_DEV_FDUSDA_BLE) {
-            driverWithText = "U20-ASF-BT (Bluetooth BLE) driver";
+            driverWithText = "U20-ASF-BT (Bluetooth BLE)";
         } else if (value == SGFDxDeviceName.SG_DEV_AUTO) {
             driverWithText = "Auto-detected";
         } else {
             driverWithText = "Unknown Device";
         }
 
-        // Strip the word "driver" and trim spaces
-        return driverWithText.replaceAll("(?i)\\bdriver\\b", "").trim();
+        return driverWithText.trim();
     }
 
     public static short getSecuGenTemplateFormat(BiometricTemplateFormat format) {
@@ -124,5 +131,23 @@ public class Helper {
                 break;
         }
         return result;
+    }
+
+    public static SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
+        final Log log = LogFactory.getLog(BiometricMatchingEngine.class);
+
+        byte[] templateBytes = new byte[400];
+        templateBytes = Base64.getDecoder().decode(fingerprint.getTemplate());
+        log.debug("========== Byte array size: " + templateBytes.length);
+        return new SSIdTemplatePair(fingerprint.getId(), templateBytes);
+    }
+
+    public static int[] buildFingerprintIdList(List<Fingerprint> fingerprints) {
+        int[] ids = new int[fingerprints.size()];
+
+        for (int i = 0; i < fingerprints.size(); i++) {
+            ids[i] = fingerprints.get(i).getId();
+        }
+        return ids;
     }
 }

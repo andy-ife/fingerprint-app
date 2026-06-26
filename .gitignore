@@ -1,4 +1,6 @@
+# Build artifacts
 target/
+dependency_tree.txt
 
 ### Eclipse ###
 .classpath

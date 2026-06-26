@@ -105,7 +105,7 @@ public class FingerprintScanningEngine {
             for (SGDeviceList device : devList) {
                 BiometricScanner scanner = new BiometricScanner();
                 scanner.setId(String.valueOf(device.devID));
-                scanner.setDisplayName(Helper.getDeviceDislayName(device.devName));
+                scanner.setDisplayName(Helper.getDeviceDisplayName(device.devName));
                 scanner.setImageHeight(deviceInfo.imageHeight);
                 scanner.setImageWidth(deviceInfo.imageWidth);
                 ret.add(scanner);

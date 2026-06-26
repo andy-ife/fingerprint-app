@@ -20,7 +20,6 @@ import com.andyslab.biometric.service.model.BiometricConfig;
 import com.andyslab.biometric.service.model.BiometricMatch;
 import com.andyslab.biometric.service.model.BiometricSubject;
 import com.andyslab.biometric.service.model.BiometricTemplateFormat;
-import com.andyslab.biometric.service.model.Fingerprint;
 import com.secugen.secusearch.api.SSCandidate;
 import com.secugen.secusearch.api.SSEngineParam;
 import com.secugen.secusearch.api.SSException;
@@ -86,7 +85,7 @@ public class BiometricMatchingEngine {
         try {
             BiometricSubject savedSubject = backupDbService.saveSubject(biometricSubject);
             boolean success = SecuSearch.getInstance()
-                    .registerFPBatch(savedSubject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
+                    .registerFPBatch(savedSubject.getFingerprints().stream().map(Helper::mapToSSIdTemplatePair)
                             .toArray(SSIdTemplatePair[]::new));
 
             // Check the result and handle errors if they occur
@@ -123,9 +122,9 @@ public class BiometricMatchingEngine {
         try {
             BiometricSubject updatedSubject = backupDbService.updateSubject(biometricSubject);
             biometricSubject = updatedSubject;
-            SecuSearch.getInstance().removeFPBatch(buildFingerprintIdList(updatedSubject.getFingerprints()));
+            SecuSearch.getInstance().removeFPBatch(Helper.buildFingerprintIdList(updatedSubject.getFingerprints()));
             boolean success = SecuSearch.getInstance()
-                    .registerFPBatch(updatedSubject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
+                    .registerFPBatch(updatedSubject.getFingerprints().stream().map(Helper::mapToSSIdTemplatePair)
                             .toArray(SSIdTemplatePair[]::new));
             if (success == true) {
                 SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
@@ -239,7 +238,7 @@ public class BiometricMatchingEngine {
         try {
             BiometricSubject subject = backupDbService.deleteBySubjectId(subjectId);
             if (subject != null) {
-                SecuSearch.getInstance().removeFPBatch(buildFingerprintIdList(subject.getFingerprints()));
+                SecuSearch.getInstance().removeFPBatch(Helper.buildFingerprintIdList(subject.getFingerprints()));
                 SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
             }
             log.debug("No saved biometrics found for subject: " + subjectId);
@@ -293,7 +292,7 @@ public class BiometricMatchingEngine {
 
             for (BiometricSubject subject : allSubjects) {
                 SecuSearch.getInstance()
-                        .registerFPBatch(subject.getFingerprints().stream().map(this::mapToSSIdTemplatePair)
+                        .registerFPBatch(subject.getFingerprints().stream().map(Helper::mapToSSIdTemplatePair)
                                 .toArray(SSIdTemplatePair[]::new));
             }
 
@@ -301,24 +300,6 @@ public class BiometricMatchingEngine {
         } catch (Exception e) {
             log.error("Error syncing databases: " + e.toString());
         }
-    }
-
-    // ***** CONVENIENCE METHODS *****
-
-    private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
-        byte[] templateBytes = new byte[400];
-        templateBytes = Base64.getDecoder().decode(fingerprint.getTemplate());
-        log.debug("========== Byte array size: " + templateBytes.length);
-        return new SSIdTemplatePair(fingerprint.getId(), templateBytes);
-    }
-
-    private int[] buildFingerprintIdList(List<Fingerprint> fingerprints) {
-        int[] ids = new int[fingerprints.size()];
-
-        for (int i = 0; i < fingerprints.size(); i++) {
-            ids[i] = fingerprints.get(i).getId();
-        }
-        return ids;
     }
 
 }
