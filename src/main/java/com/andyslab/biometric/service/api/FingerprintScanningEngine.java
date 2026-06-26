@@ -82,10 +82,8 @@ public class FingerprintScanningEngine {
         }
 
         if (deviceInfo == null) {
-            initializeDevices();
+            throw new DeviceNotFoundException();
         }
-
-        log.debug("Retrieving fingerprint scanners...");
 
         if (client != null) {
             long error = -1;
@@ -97,12 +95,11 @@ public class FingerprintScanningEngine {
 
             error = client.EnumerateDevice(ndevs, devList);
             if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
-                System.out.println("EnumerateDevice() Success [" + error + "]");
-                System.out
-                        .println("# of devices: [" + devList[0].devID + " " + devList[0].devName + " "
-                                + devList[0].devType + "]");
+                log.debug("EnumerateDevice() Success [" + error + "]");
+                log.debug("# of devices: [" + devList[0].devID + " " + devList[0].devName + " "
+                        + devList[0].devType + "]");
             } else {
-                System.out.println("Error counting devices");
+                log.error("Error counting devices");
             }
 
             List<BiometricScanner> ret = new ArrayList<>();
@@ -116,12 +113,7 @@ public class FingerprintScanningEngine {
             }
             return ret;
         } else {
-            List<BiometricScanner> scanners = new ArrayList<BiometricScanner>();
-            BiometricScanner scanner = new BiometricScanner();
-            scanner.setDisplayName("Scanny");
-            scanner.setId("shfskjhsfsf");
-            scanners.add(scanner);
-            return scanners;
+            throw new DeviceNotFoundException();
         }
     }
 
@@ -236,30 +228,27 @@ public class FingerprintScanningEngine {
     private void initializeClient() {
         client = new JSGFPLib();
         long error = client.Open();
-        error = client.Init(config.getDeviceName()); // hamster u20
+        error = client.Init(config.getDeviceName());
         if (client != null && error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             // Set template format
             client.SetTemplateFormat(Helper.getSecuGenTemplateFormat(config.getTemplateFormat()));
 
             // Count Devices
-            System.out.println("JSGFPLib Initialization Success");
-            int[] ndevs = new int[1];
-            ndevs[0] = 0;
-            SGDeviceList[] devList = new SGDeviceList[1];
-            devList[0] = new SGDeviceList();
+            log.debug("JSGFPLib Initialization Success");
+            int[] ndevs = { 0 };
+            SGDeviceList[] devList = { new SGDeviceList() };
 
             error = client.EnumerateDevice(ndevs, devList);
             if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
-                System.out.println("EnumerateDevice() Success [" + error + "]");
-                System.out
-                        .println("# of devices: [" + devList[0].devID + " " + devList[0].devName + " "
-                                + devList[0].devType + "]");
+                log.debug("EnumerateDevice() Success [" + error + "]");
+                log.debug("# of devices: [" + devList[0].devID + " " + devList[0].devName + " "
+                        + devList[0].devType + "]");
             } else {
-                System.out.println("Error counting devices");
+                log.error("Error counting devices");
             }
         } else {
             client = null;
-            System.err.println("JSGFPLib Initialization Error");
+            log.error("JSGFPLib Initialization Error");
         }
 
     }
@@ -272,7 +261,7 @@ public class FingerprintScanningEngine {
             List<BiometricScanner> scanners = getFingerprintScanners();
             if (scanners.size() == 0) {
                 deviceInfo = null;
-                System.err.println("No fingerprint scanners found");
+                log.error("No fingerprint scanners found");
                 return;
             }
             client.OpenDevice(Long.parseLong(scanners.get(0).getId()));
@@ -283,10 +272,10 @@ public class FingerprintScanningEngine {
         if (error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             deviceInfo.imageWidth = deviceInfo.imageWidth;
             deviceInfo.imageHeight = deviceInfo.imageHeight;
-            System.out.println("Device Initialization Success");
+            log.debug("Device Initialization Success");
         } else {
             deviceInfo = null;
-            System.err.println("Device Initialization Error");
+            log.error("Device Initialization Error");
 
         }
     }
@@ -303,7 +292,7 @@ public class FingerprintScanningEngine {
             client = null;
             deviceInfo = null;
         } catch (Exception e) {
-            System.out.println("Error disposing of biometric client/device");
+            log.error("Error disposing of biometric client/device");
         }
     }
 }

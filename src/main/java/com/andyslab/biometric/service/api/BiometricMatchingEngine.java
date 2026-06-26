@@ -98,7 +98,7 @@ public class BiometricMatchingEngine {
             }
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
         } catch (Exception e) {
-            System.err.println("Error enrolling subject: " + e.toString());
+            log.error("Error enrolling subject: " + e.toString());
 
         }
 
@@ -136,7 +136,7 @@ public class BiometricMatchingEngine {
 
             log.debug("Template saved successfully for " + biometricSubject.getSubjectId());
         } catch (Exception e) {
-            System.err.println("Error updating subject: " + e.toString());
+            log.error("Error updating subject: " + e.toString());
         }
 
         return biometricSubject;
@@ -171,7 +171,7 @@ public class BiometricMatchingEngine {
                 throw new BiometricServiceException("Identification failed");
             }
         } catch (Exception e) {
-            System.err.println("Error matching subject: " + e.toString());
+            log.error("Error matching subject: " + e.toString());
         }
 
         return ret;
@@ -190,7 +190,7 @@ public class BiometricMatchingEngine {
             }
             return backupDbNumber;
         } catch (Exception e) {
-            System.err.println("Error updating subject: " + e.toString());
+            log.error("Error updating subject: " + e.toString());
         }
         return -1;
     }
@@ -223,7 +223,7 @@ public class BiometricMatchingEngine {
             }
             return biometricSubject;
         } catch (Exception e) {
-            System.err.println("Error finding subject: " + e.toString());
+            log.error("Error finding subject: " + e.toString());
 
         }
 
@@ -244,7 +244,7 @@ public class BiometricMatchingEngine {
             }
             log.debug("No saved biometrics found for subject: " + subjectId);
         } catch (Exception e) {
-            System.err.println("Error deleting subject: " + e.toString());
+            log.error("Error deleting subject: " + e.toString());
 
         }
     }
@@ -253,7 +253,7 @@ public class BiometricMatchingEngine {
         try {
             SecuSearch.getInstance().terminateEngine();
         } catch (Exception e) {
-            System.err.println("Error terminating engine: " + e.toString());
+            log.error("Error terminating engine: " + e.toString());
         }
     }
 
@@ -273,16 +273,16 @@ public class BiometricMatchingEngine {
                 }
             } catch (SSException e) {
                 try {
-                    System.err.println("Error loading main database: " + e.getErrorCode() + e.toString());
+                    log.error("Error loading main database: " + e.getErrorCode() + e.toString());
                     // TODO: Somehow populate SecuSearch instance with backup db data
                 } catch (Exception er) {
-                    System.err.println("Error loading backup database: " + er.toString());
+                    log.error("Error loading backup database: " + er.toString());
                 }
             } catch (Exception e) {
-                System.err.println("Error loading databases: " + e.toString());
+                log.error("Error loading databases: " + e.toString());
             }
         } catch (Exception e) {
-            System.out.println("Error creating biometric client: " + e.toString());
+            log.error("Error creating biometric client: " + e.toString());
         }
     }
 
@@ -299,7 +299,7 @@ public class BiometricMatchingEngine {
 
             SecuSearch.getInstance().saveFPDB(config.getSqliteDatabasePath());
         } catch (Exception e) {
-            System.out.println("Error syncing databases: " + e.toString());
+            log.error("Error syncing databases: " + e.toString());
         }
     }
 
@@ -308,7 +308,7 @@ public class BiometricMatchingEngine {
     private SSIdTemplatePair mapToSSIdTemplatePair(Fingerprint fingerprint) {
         byte[] templateBytes = new byte[400];
         templateBytes = Base64.getDecoder().decode(fingerprint.getTemplate());
-        System.out.println("========== Byte array size: " + templateBytes.length);
+        log.debug("========== Byte array size: " + templateBytes.length);
         return new SSIdTemplatePair(fingerprint.getId(), templateBytes);
     }
 
