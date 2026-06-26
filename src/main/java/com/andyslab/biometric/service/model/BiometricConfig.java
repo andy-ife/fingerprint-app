@@ -32,6 +32,8 @@ public class BiometricConfig implements Serializable {
     private String sqliteDatabasePath;
     private Integer matchingThreshold;
     private Integer scanningThreshold;
+    private Integer scanConfirmationCount;
+    private Integer scanTimeoutMs;
     private MatchingSpeed matchingSpeed;
     private TemplateSize templateSize;
     private BiometricTemplateFormat templateFormat;
@@ -130,4 +132,21 @@ public class BiometricConfig implements Serializable {
     public void setScanningThreshold(Integer scanningThreshold) {
         this.scanningThreshold = scanningThreshold;
     }
+
+    public Integer getScanConfirmationCount() {
+        return scanConfirmationCount;
+    }
+
+    public void setScanConfirmationCount(Integer scanConfirmationCount) {
+        this.scanConfirmationCount = scanConfirmationCount;
+    }
+
+    public Integer getScanTimeoutMs() {
+        return scanTimeoutMs;
+    }
+
+    public void setScanTimeoutMs(Integer scanTimeoutMs) {
+        this.scanTimeoutMs = scanTimeoutMs;
+    }
+
 }

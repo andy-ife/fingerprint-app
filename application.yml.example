@@ -1,22 +1,29 @@
-fingerprintScanningEnabled: 
-matchingServiceEnabled: 
-matchingThreshold:
-scanningThreshold: 
-matchingSpeed: 
-templateSize: 
-templateFormat: 
+# Scanning
+fingerprintScanningEnabled: "true"
+scanConfirmationCout: 3
+scanningThreshold: 80
+scanTimeoutMs: 15000
+templateSize: "LARGE"
+templateFormat: "SG400"
 
-sqliteDatabasePath: 
-licenseFilePath: 
+# Matching
+matchingServiceEnabled: "true"
+matchingThreshold: 8000
+matchingSpeed: "LOW"
 
+# Fingerprint DB
+sqliteDatabasePath: "db/secugen.db"
+licenseFilePath: "config/license.dat"
+
+# Spring & H2
 server:
   port: 8081
 
 spring:
   datasource:
     url: jdbc:h2:file:./db/secugen-backup.db
-    username: 
-    password: 
+    username: admin
+    password: Admin123
     driverClassName: org.h2.Driver
   jpa:
     database-platform: org.hibernate.dialect.H2Dialect

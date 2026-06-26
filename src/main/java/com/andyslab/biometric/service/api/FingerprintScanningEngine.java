@@ -46,19 +46,13 @@ import java.util.List;
  */
 @Component
 public class FingerprintScanningEngine {
-
-    static private final long TIMEOUT_IN_MS = 15000;
-    static private final int[] MAX_TEMPLATE_SIZE = { 400 };
-
     protected final Log log = LogFactory.getLog(this.getClass());
 
     @Autowired
     BiometricConfig config;
 
     static private JSGFPLib client = null;
-
     private SGDeviceInfoParam deviceInfo = null;
-    private short secuGenTemplateFormat = SGFDxTemplateFormat.TEMPLATE_FORMAT_SG400;
 
     @PostConstruct
     public void init() {
@@ -166,9 +160,17 @@ public class FingerprintScanningEngine {
             byte[] buffer = new byte[deviceInfo.imageWidth * deviceInfo.imageHeight];
             long targetQuality = config.getScanningThreshold();
             int[] actualQuality = new int[1];
+            int[] maxTemplateSize = new int[1];
             log.debug("Capturing fingerprint...");
 
-            long res = client.GetImageEx(buffer, TIMEOUT_IN_MS, 0, targetQuality);
+            long res = client.GetImageEx(buffer, config.getScanTimeoutMs(), 0, targetQuality);
+
+            /**
+             * TODO: We should scan 2-3 times and compare the fingerprints for higher
+             * accuracy
+             * This can be done using JSGFPLib.MatchTemplate() (SG400 only)
+             * Or JSGFPLIb.MatchTemplateEx() (SG400, ANSI378, ISO19794)
+             */
 
             if (res == SGFDxErrorCode.SGFDX_ERROR_NONE) {
 
@@ -186,17 +188,18 @@ public class FingerprintScanningEngine {
                 fingerInfo.ImageQuality = actualQuality[0];
 
                 // If quality is too low, scan again
-                if (fingerInfo.ImageQuality < 60) {
+                if (fingerInfo.ImageQuality < targetQuality) {
                     throw new BadScanException("Scan quality is too low. Please try again");
                 }
                 log.debug("Fingerprint captured successfully...");
 
                 // Create template from captured image
-                long err = client.GetMaxTemplateSize(MAX_TEMPLATE_SIZE);
+                long err = client.GetTemplateSize(buffer, maxTemplateSize);
+                err = client.GetMaxTemplateSize(maxTemplateSize);
                 if (err != SGFDxErrorCode.SGFDX_ERROR_NONE) {
                     throw new BiometricServiceException("Error Getting Max Template Size");
                 }
-                byte[] minBuffer = new byte[MAX_TEMPLATE_SIZE[0]];
+                byte[] minBuffer = new byte[maxTemplateSize[0]];
                 log.debug("Extracting template...");
                 err = client.CreateTemplate(fingerInfo, buffer, minBuffer);
                 if (err != SGFDxErrorCode.SGFDX_ERROR_NONE) {
@@ -237,8 +240,7 @@ public class FingerprintScanningEngine {
         error = client.Init(SGFDxDeviceName.SG_DEV_FDU05); // hamster u20
         if (client != null && error == SGFDxErrorCode.SGFDX_ERROR_NONE) {
             // Set template format
-            secuGenTemplateFormat = getSecuGenTemplateFormat(config.getTemplateFormat());
-            client.SetTemplateFormat(secuGenTemplateFormat);
+            client.SetTemplateFormat(getSecuGenTemplateFormat(config.getTemplateFormat()));
 
             // Count Devices
             System.out.println("JSGFPLib Initialization Success");
@@ -275,7 +277,7 @@ public class FingerprintScanningEngine {
                 return;
             }
             client.OpenDevice(Long.parseLong(scanners.get(0).getId()));
-            client.SetTemplateFormat(secuGenTemplateFormat);
+            client.SetTemplateFormat(getSecuGenTemplateFormat(config.getTemplateFormat()));
             error = client.GetDeviceInfo(deviceInfo);
         }
 
