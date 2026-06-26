@@ -1,7 +1,8 @@
 # Device/Scanner
 templateSize: "LARGE"
 templateFormat: "SG400"
-deviceName: 6 # 6 here means Hamster U20 fp scanner. Get your device name from the device manual
+deviceName: 6 # 6 here means Hamster U20 fp scanner. Get your own device name from its manual
+impressionType: 0 # 0 here means Live-scan plain. Update this based on your device's codes
 
 # Scanning
 fingerprintScanningEnabled: "true"

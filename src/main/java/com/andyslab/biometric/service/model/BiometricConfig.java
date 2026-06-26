@@ -38,6 +38,7 @@ public class BiometricConfig implements Serializable {
     private TemplateSize templateSize;
     private BiometricTemplateFormat templateFormat;
     private Integer deviceName;
+    private Integer impressionType;
     private Integer ajpPort;
 
     // ***** PROPERTY ACCESS *****
@@ -149,4 +150,11 @@ public class BiometricConfig implements Serializable {
         this.scanTimeoutMs = scanTimeoutMs;
     }
 
+    public Integer getImpressionType() {
+        return impressionType;
+    }
+
+    public void setImpressionType(Integer impressionType) {
+        this.impressionType = impressionType;
+    }
 }

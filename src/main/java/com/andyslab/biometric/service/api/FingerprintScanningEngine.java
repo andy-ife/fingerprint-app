@@ -15,7 +15,6 @@ import SecuGen.FDxSDKPro.jni.SGDeviceList;
 import SecuGen.FDxSDKPro.jni.SGFDxErrorCode;
 import SecuGen.FDxSDKPro.jni.SGFingerInfo;
 import SecuGen.FDxSDKPro.jni.SGFingerPosition;
-import SecuGen.FDxSDKPro.jni.SGImpressionType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -106,7 +105,7 @@ public class FingerprintScanningEngine {
             for (SGDeviceList device : devList) {
                 BiometricScanner scanner = new BiometricScanner();
                 scanner.setId(String.valueOf(device.devID));
-                scanner.setDisplayName(String.valueOf(Helper.getDeviceDislayName(device.devName)));
+                scanner.setDisplayName(Helper.getDeviceDislayName(device.devName));
                 scanner.setImageHeight(deviceInfo.imageHeight);
                 scanner.setImageWidth(deviceInfo.imageWidth);
                 ret.add(scanner);
@@ -145,16 +144,18 @@ public class FingerprintScanningEngine {
             }
         }
 
-        log.debug("Scanning fingerprint from device");
+        log.debug("Scanning fingerprint...");
 
         try {
             byte[] buffer = new byte[deviceInfo.imageWidth * deviceInfo.imageHeight];
             long targetQuality = config.getScanningThreshold();
             int[] actualQuality = new int[1];
             int[] maxTemplateSize = new int[1];
+            int timeout = config.getScanTimeoutMs();
+            int impressionType = config.getImpressionType();
             log.debug("Capturing fingerprint...");
 
-            long res = client.GetImageEx(buffer, config.getScanTimeoutMs(), 0, targetQuality);
+            long res = client.GetImageEx(buffer, timeout, 0, targetQuality);
 
             /**
              * TODO: We should scan 2-3 times and compare the fingerprints for higher
@@ -168,12 +169,12 @@ public class FingerprintScanningEngine {
                 // Get information about finger
                 SGFingerInfo fingerInfo = new SGFingerInfo();
                 if (type == null) {
-                    fingerInfo.FingerNumber = SGFingerPosition.SG_FINGPOS_UK;
+                    fingerInfo.FingerNumber = SGFingerPosition.SG_FINGPOS_UK; // Unknown finger
                 } else {
                     fingerInfo.FingerNumber = Helper.getFingerPosition(Integer.valueOf(type));
                 }
                 fingerInfo.ViewNumber = 1;
-                fingerInfo.ImpressionType = SGImpressionType.SG_IMPTYPE_LP;
+                fingerInfo.ImpressionType = Helper.getImpressionType(impressionType);
                 client.GetImageQuality(deviceInfo.imageWidth, deviceInfo.imageHeight, buffer,
                         actualQuality);
                 fingerInfo.ImageQuality = actualQuality[0];
@@ -215,9 +216,7 @@ public class FingerprintScanningEngine {
             deviceInfo = null;
             throw new BiometricServiceException("Error capturing fingerprint:", e);
         }
-
         return fp;
-
     }
 
     // ***** LIFECYCLE METHODS *****
