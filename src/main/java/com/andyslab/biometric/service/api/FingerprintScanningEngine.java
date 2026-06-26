@@ -21,7 +21,6 @@ import SecuGen.FDxSDKPro.jni.SGImpressionType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.andyslab.biometric.service.exception.BadScanException;
@@ -48,11 +47,14 @@ import java.util.List;
 public class FingerprintScanningEngine {
     protected final Log log = LogFactory.getLog(this.getClass());
 
-    @Autowired
-    BiometricConfig config;
+    final BiometricConfig config;
 
     static private JSGFPLib client = null;
     private SGDeviceInfoParam deviceInfo = null;
+
+    FingerprintScanningEngine(BiometricConfig config) {
+        this.config = config;
+    }
 
     @PostConstruct
     public void init() {

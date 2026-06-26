@@ -9,7 +9,6 @@
  */
 package com.andyslab.biometric.service.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -31,8 +30,11 @@ import java.util.List;
 @RequestMapping("/fingerprint")
 public class FingerprintScanController {
 
-    @Autowired
-    FingerprintScanningEngine engine;
+    final FingerprintScanningEngine engine;
+
+    FingerprintScanController(FingerprintScanningEngine engine) {
+        this.engine = engine;
+    }
 
     /**
      * @return Connected Fingerprint scanners list

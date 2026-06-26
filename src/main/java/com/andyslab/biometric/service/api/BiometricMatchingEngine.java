@@ -11,7 +11,6 @@ package com.andyslab.biometric.service.api;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.andyslab.biometric.service.data.service.BiometricSubjectService;
@@ -46,11 +45,14 @@ public class BiometricMatchingEngine {
 
     protected final Log log = LogFactory.getLog(this.getClass());
 
-    @Autowired
-    BiometricConfig config;
+    final BiometricConfig config;
 
-    @Autowired
-    BiometricSubjectService backupDbService;
+    final BiometricSubjectService backupDbService;
+
+    BiometricMatchingEngine(BiometricConfig config, BiometricSubjectService backupDbService) {
+        this.config = config;
+        this.backupDbService = backupDbService;
+    }
 
     /**
      * On startup, we ensure licenses are appropriately added and the server is

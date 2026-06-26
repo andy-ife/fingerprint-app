@@ -9,7 +9,6 @@
  */
 package com.andyslab.biometric.service.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,8 +31,11 @@ import java.util.List;
 @RequestMapping("/match")
 public class MatchController {
 
-    @Autowired
-    BiometricMatchingEngine engine;
+    final BiometricMatchingEngine engine;
+
+    MatchController(BiometricMatchingEngine engine) {
+        this.engine = engine;
+    }
 
     /**
      * @return matches for the given subject. This is essentially a search for a

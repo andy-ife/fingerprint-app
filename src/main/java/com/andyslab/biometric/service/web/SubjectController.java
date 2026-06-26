@@ -9,7 +9,6 @@
  */
 package com.andyslab.biometric.service.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,8 +33,11 @@ import javax.servlet.http.HttpServletResponse;
 @CrossOrigin
 public class SubjectController {
 
-    @Autowired
-    BiometricMatchingEngine engine;
+    final BiometricMatchingEngine engine;
+
+    SubjectController(BiometricMatchingEngine engine) {
+        this.engine = engine;
+    }
 
     /**
      * A POST operation is only meant to create, not update. Duplicate subjects

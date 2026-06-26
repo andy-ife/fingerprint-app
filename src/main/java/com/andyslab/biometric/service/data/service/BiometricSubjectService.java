@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.andyslab.biometric.service.data.localdb.BiometricSubjectEntity;
@@ -18,7 +17,6 @@ import com.andyslab.biometric.service.model.Fingerprint;
 public class BiometricSubjectService {
     private BiometricSubjectRepository subjectRepo;
 
-    @Autowired
     public BiometricSubjectService(BiometricSubjectRepository repo) {
         this.subjectRepo = repo;
     }

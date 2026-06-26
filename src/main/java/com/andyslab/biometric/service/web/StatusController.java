@@ -9,7 +9,6 @@
  */
 package com.andyslab.biometric.service.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -26,11 +25,14 @@ import com.andyslab.biometric.service.model.BiometricStatus;
 @CrossOrigin
 public class StatusController {
 
-    @Autowired
-    BiometricConfig config;
+    final BiometricConfig config;
 
-    @Autowired
-    BiometricMatchingEngine engine;
+    final BiometricMatchingEngine engine;
+
+    StatusController(BiometricConfig config, BiometricMatchingEngine engine) {
+        this.config = config;
+        this.engine = engine;
+    }
 
     /**
      * @return the status of the system.
