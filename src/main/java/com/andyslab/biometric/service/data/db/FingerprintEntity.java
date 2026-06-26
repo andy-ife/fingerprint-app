@@ -1,4 +1,4 @@
-package com.andyslab.biometric.service.data.localdb;
+package com.andyslab.biometric.service.data.db;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

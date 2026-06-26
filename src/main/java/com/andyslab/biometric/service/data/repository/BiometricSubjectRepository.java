@@ -5,7 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.andyslab.biometric.service.data.localdb.BiometricSubjectEntity;
+import com.andyslab.biometric.service.data.db.BiometricSubjectEntity;
 
 import java.util.List;
 

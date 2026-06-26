@@ -12,12 +12,12 @@ target/
 *.ipr
 
 ### Fingerprint sdk implementation details
-lib/
-config/
-db/
+/lib/
+/config/
+/db/
 
 ### Jars
-bin/
+/bin/
 
 ### Error Logs
 **hs_err_pid*.log

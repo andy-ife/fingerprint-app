@@ -7,8 +7,8 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
-import com.andyslab.biometric.service.data.localdb.BiometricSubjectEntity;
-import com.andyslab.biometric.service.data.localdb.FingerprintEntity;
+import com.andyslab.biometric.service.data.db.BiometricSubjectEntity;
+import com.andyslab.biometric.service.data.db.FingerprintEntity;
 import com.andyslab.biometric.service.data.repository.BiometricSubjectRepository;
 import com.andyslab.biometric.service.model.BiometricSubject;
 import com.andyslab.biometric.service.model.Fingerprint;
