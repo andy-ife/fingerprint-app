@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.andyslab.biometric.service.api.FingerprintScanningEngine;
 import com.andyslab.biometric.service.model.BiometricScanner;
 import com.andyslab.biometric.service.model.Fingerprint;
+import com.andyslab.biometric.service.model.ScanType;
 
 import java.util.List;
 
@@ -55,8 +56,8 @@ public class FingerprintScanController {
     @ResponseBody
     public Fingerprint scan(
             @RequestParam(required = false) String type,
-            @RequestParam(required = false) String viewNumber,
-            @RequestParam(required = false) String sessionId) {
-        return engine.scanFingerprint(type, viewNumber, sessionId);
+            @RequestParam(required = false) String sessionId,
+            @RequestParam(required = true) ScanType scanType) {
+        return engine.scanFingerprint(type, sessionId, scanType);
     }
 }

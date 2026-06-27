@@ -25,6 +25,11 @@ public class Fingerprint extends BiometricSample {
         super.setTemplate(template);
     }
 
+    public Fingerprint(BiometricTemplateFormat format, String template) {
+        super.setFormat(format);
+        super.setTemplate(template);
+    }
+
     public String getImage() {
         if (image == null)
             return "";

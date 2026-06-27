@@ -10,7 +10,9 @@ import com.andyslab.biometric.service.model.BiometricTemplateFormat;
 import com.andyslab.biometric.service.model.Fingerprint;
 import com.secugen.secusearch.api.SSIdTemplatePair;
 
+import SecuGen.FDxSDKPro.jni.JSGFPLib;
 import SecuGen.FDxSDKPro.jni.SGFDxDeviceName;
+import SecuGen.FDxSDKPro.jni.SGFDxSecurityLevel;
 import SecuGen.FDxSDKPro.jni.SGFDxTemplateFormat;
 import SecuGen.FDxSDKPro.jni.SGFingerPosition;
 import SecuGen.FDxSDKPro.jni.SGImpressionType;
@@ -149,5 +151,23 @@ public class Helper {
             ids[i] = fingerprints.get(i).getId();
         }
         return ids;
+    }
+
+    public static byte[] templateToB64(Fingerprint fp) {
+        return Base64.getDecoder().decode(fp.getTemplate());
+    }
+
+    public static boolean verifyFingerprints(JSGFPLib client, Fingerprint fp1, Fingerprint fp2) {
+        byte[] fp1Bytes = Base64.getDecoder().decode(fp1.getTemplate());
+        byte[] fp2Bytes = Base64.getDecoder().decode(fp2.getTemplate());
+
+        short fp1Format = Helper.getSecuGenTemplateFormat(fp1.getFormat());
+        short fp2Format = Helper.getSecuGenTemplateFormat(fp2.getFormat());
+
+        boolean[] matched = new boolean[1];
+
+        client.MatchTemplateEx(fp1Bytes, fp1Format, 0, fp2Bytes, fp2Format, 0, SGFDxSecurityLevel.SL_NORMAL, matched);
+
+        return matched[0];
     }
 }

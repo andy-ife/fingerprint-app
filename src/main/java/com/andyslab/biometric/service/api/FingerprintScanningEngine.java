@@ -26,8 +26,10 @@ import com.andyslab.biometric.service.exception.DeviceNotFoundException;
 import com.andyslab.biometric.service.exception.DeviceTimeoutException;
 import com.andyslab.biometric.service.exception.ServiceNotEnabledException;
 import com.andyslab.biometric.service.model.BiometricConfig;
+import com.andyslab.biometric.service.model.BiometricScanSession;
 import com.andyslab.biometric.service.model.BiometricScanner;
 import com.andyslab.biometric.service.model.Fingerprint;
+import com.andyslab.biometric.service.model.ScanType;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -44,12 +46,14 @@ public class FingerprintScanningEngine {
     protected final Log log = LogFactory.getLog(this.getClass());
 
     final BiometricConfig config;
+    final ScanSessionManager sessionManager;
 
     static private JSGFPLib client = null;
     private SGDeviceInfoParam deviceInfo = null;
 
-    FingerprintScanningEngine(BiometricConfig config) {
+    FingerprintScanningEngine(BiometricConfig config, ScanSessionManager manager) {
         this.config = config;
+        this.sessionManager = manager;
     }
 
     @PostConstruct
@@ -120,7 +124,7 @@ public class FingerprintScanningEngine {
      * Scans a fingerprint.
      */
     public Fingerprint scanFingerprint() {
-        return scanFingerprint(null, "1", null);
+        return scanFingerprint(null, null, ScanType.REGISTRATION);
     }
 
     /**
@@ -129,7 +133,7 @@ public class FingerprintScanningEngine {
      * type is String.valueOf(SGFingerPosition)
      * viewNumber is the iteration of the fingerprint for the current scan session
      */
-    public synchronized Fingerprint scanFingerprint(String type, String viewNumber, String sessionId) {
+    public synchronized Fingerprint scanFingerprint(String type, String sessionId, ScanType scanType) {
         Fingerprint fp = new Fingerprint();
 
         if (!config.isFingerprintScanningEnabled()) {
@@ -145,9 +149,17 @@ public class FingerprintScanningEngine {
             }
         }
 
+        // Check for existing sessions
+        int viewNumber = 1;
+        BiometricScanSession session = sessionManager.getSession(sessionId);
+        if (session != null && session.getFingerprints() != null && session.getFingerprints().size() < 3) {
+            viewNumber = session.getFingerprints().size() + 1;
+        }
+
         log.debug("Scanning fingerprint...");
 
         try {
+            // Initialize vars
             byte[] buffer = new byte[deviceInfo.imageWidth * deviceInfo.imageHeight];
             long targetQuality = config.getScanningThreshold();
             int[] actualQuality = new int[1];
@@ -157,13 +169,6 @@ public class FingerprintScanningEngine {
             log.debug("Capturing fingerprint...");
 
             long res = client.GetImageEx(buffer, timeout, 0, targetQuality);
-
-            /**
-             * TODO: We should scan 2-3 times and compare the fingerprints for higher
-             * accuracy
-             * This can be done using JSGFPLib.MatchTemplate() (SG400 only)
-             * Or JSGFPLIb.MatchTemplateEx() (SG400, ANSI378, ISO19794)
-             */
 
             if (res == SGFDxErrorCode.SGFDX_ERROR_NONE) {
 
@@ -199,6 +204,29 @@ public class FingerprintScanningEngine {
                     throw new BiometricServiceException("Error Creating SG400 Fingerprint Template");
                 }
 
+                // verify the print
+                List<Fingerprint> fingerprints = session.getFingerprints();
+                Fingerprint prevFp1 = (fingerprints.size() > 0) ? fingerprints.get(0) : null;
+                Fingerprint prevFp2 = (fingerprints.size() > 1) ? fingerprints.get(1) : null;
+                Fingerprint cur = new Fingerprint(config.getTemplateFormat(),
+                        Base64.getEncoder().encodeToString(minBuffer));
+                boolean matched = false;
+
+                if (prevFp1 != null && prevFp2 != null) {
+                    // match 1 and cur && 2 and cur
+                    boolean match1 = Helper.verifyFingerprints(client, prevFp1, cur);
+                    boolean match2 = Helper.verifyFingerprints(client, prevFp2, cur);
+                    matched = match1 && match2;
+                } else if (prevFp1 != null && prevFp2 == null) {
+                    // match 1 and cur
+                    boolean match1 = Helper.verifyFingerprints(client, prevFp1, cur);
+                    matched = match1;
+                }
+
+                if (!matched) {
+                    throw new BadScanException("Poor scan detected. Please adjust your finger's position");
+                }
+
                 // Create Fingerprint model
                 String b64Template = Base64.getEncoder().encodeToString(minBuffer);
                 String b64Image = Base64.getEncoder().encodeToString(buffer);
@@ -206,6 +234,15 @@ public class FingerprintScanningEngine {
                 fp.setImage(b64Image);
                 fp.setFormat(config.getTemplateFormat());
                 fp.setType(type);
+
+                // update or destroy the session
+                if ((scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()
+                        || scanType == ScanType.SEARCH && viewNumber >= config.getScansSearchCount())) {
+                    sessionManager.destroySession(sessionId);
+                } else {
+                    session.addFingerprint(fp);
+                    sessionManager.updateSession(session);
+                }
             }
 
         } catch (DeviceTimeoutException e) {
@@ -213,11 +250,13 @@ public class FingerprintScanningEngine {
         } catch (BadScanException e) {
             throw e;
         } catch (Exception e) {
+            // FATAL errors
+            sessionManager.destroySession(sessionId);
             client = null;
             deviceInfo = null;
             throw new BiometricServiceException("Error capturing fingerprint:", e);
         }
-        // TODO: Cache fp here with session id
+
         return fp;
     }
 

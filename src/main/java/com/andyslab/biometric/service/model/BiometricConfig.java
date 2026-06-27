@@ -32,7 +32,8 @@ public class BiometricConfig implements Serializable {
     private Integer impressionType;
 
     private boolean fingerprintScanningEnabled = true;
-    private Integer scanConfirmationCount;
+    private Integer scansRegistrationCount;
+    private Integer scansSearchCount;
     private Integer scanningThreshold;
     private Integer scanTimeoutMs;
     private Integer scanSessionTimeoutMs;
@@ -139,12 +140,20 @@ public class BiometricConfig implements Serializable {
         this.scanningThreshold = scanningThreshold;
     }
 
-    public Integer getScanConfirmationCount() {
-        return scanConfirmationCount;
+    public Integer getScansRegistrationCount() {
+        return scansRegistrationCount;
     }
 
-    public void setScanConfirmationCount(Integer scanConfirmationCount) {
-        this.scanConfirmationCount = scanConfirmationCount;
+    public void setScansRegistrationCount(Integer scanConfirmationCount) {
+        this.scansRegistrationCount = scanConfirmationCount;
+    }
+
+    public Integer getScansSearchCount() {
+        return scansSearchCount;
+    }
+
+    public void setScansSearchCount(Integer scansSearchCount) {
+        this.scansSearchCount = scansSearchCount;
     }
 
     public Integer getScanTimeoutMs() {
@@ -170,4 +179,5 @@ public class BiometricConfig implements Serializable {
     public void setScanSessionTimeoutMs(Integer scanSessionTimeoutMs) {
         this.scanSessionTimeoutMs = scanSessionTimeoutMs;
     }
+
 }

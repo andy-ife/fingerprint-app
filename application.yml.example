@@ -6,7 +6,8 @@ impressionType: 0 # 0 here means Live-scan plain. Update this based on your devi
 
 # Scanning
 fingerprintScanningEnabled: "true"
-scanConfirmationCount: 3
+scansRegistrationCount: 3
+scansSearchCount: 2
 scanningThreshold: 80
 scanTimeoutMs: 15000
 scanSessionTimeoutMs: 600000
