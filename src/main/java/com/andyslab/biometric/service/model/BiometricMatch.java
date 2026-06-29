@@ -20,13 +20,15 @@ public class BiometricMatch implements Serializable {
 
     private String subjectId;
     private Integer matchScore;
+    private Integer confidenceLevel;
 
     public BiometricMatch() {
     }
 
-    public BiometricMatch(String subjectId, Integer matchScore) {
+    public BiometricMatch(String subjectId, Integer matchScore, Integer confidenceLevel) {
         this.subjectId = subjectId;
         this.matchScore = matchScore;
+        this.confidenceLevel = confidenceLevel;
     }
 
     @Override
@@ -49,4 +51,13 @@ public class BiometricMatch implements Serializable {
     public void setMatchScore(Integer matchScore) {
         this.matchScore = matchScore;
     }
+
+    public Integer getConfidenceLevel() {
+        return confidenceLevel;
+    }
+
+    public void setConfidenceLevel(Integer confidenceLevel) {
+        this.confidenceLevel = confidenceLevel;
+    }
+
 }

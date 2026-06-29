@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import com.andyslab.biometric.service.data.service.BiometricSubjectService;
 import com.andyslab.biometric.service.exception.BiometricServiceException;
 import com.andyslab.biometric.service.exception.ServiceNotEnabledException;
+import com.andyslab.biometric.service.exception.SubjectNotFoundException;
 import com.andyslab.biometric.service.model.BiometricConfig;
 import com.andyslab.biometric.service.model.BiometricMatch;
 import com.andyslab.biometric.service.model.BiometricSubject;
@@ -145,10 +146,13 @@ public class BiometricMatchingEngine {
      * @return a List of BiometricsMatch that match the given biometricSubject,
      *         along with information on the match quality
      * 
-     *         assume one finger per subject
      */
     public List<BiometricMatch> identify(BiometricSubject biometricSubject) {
         List<BiometricMatch> ret = new ArrayList<BiometricMatch>();
+
+        if (biometricSubject.getFingerprints().isEmpty() || biometricSubject.getFingerprints().get(0) == null) {
+            throw new BiometricServiceException("We can't match this subject because no fingerprints were provided");
+        }
 
         log.debug("Identifying Matches for source template...");
 
@@ -159,15 +163,16 @@ public class BiometricMatchingEngine {
             if (candidates.length > 0) {
                 log.debug("Found " + candidates.length + " possible matches");
                 for (SSCandidate candidate : candidates) {
-                    if (candidate.getMatchScore() >= config.getMatchingThreshold())
+                    if (candidate.getMatchScore() >= config.getMatchingThreshold()
+                            && candidate.getConfidenceLevel().level() > 5)
                         ret.add(new BiometricMatch(
                                 backupDbService.getSubjectByFingerprintId(candidate.getId()).getSubjectId(),
-                                candidate.getMatchScore()));
+                                candidate.getMatchScore(),
+                                candidate.getConfidenceLevel().level()));
                 }
-            } else if (candidates.length == 0) {
-                log.debug("No match found");
             } else {
-                throw new BiometricServiceException("Identification failed");
+                log.debug("No match found");
+                throw new SubjectNotFoundException(biometricSubject.getSubjectId());
             }
         } catch (Exception e) {
             log.error("Error matching subject: " + e.toString());
@@ -268,7 +273,8 @@ public class BiometricMatchingEngine {
                 boolean success = SecuSearch.getInstance().loadFPDB(db);
                 if (new File(db).exists() && !success) {
                     // TODO: Somehow populate SecuSearch instance with backup db data
-                    throw new BiometricServiceException("Error initializing fingerprint database");
+                    throw new BiometricServiceException(
+                            "The device could not load the database file. The file may be corrupted.");
                 }
             } catch (SSException e) {
                 try {

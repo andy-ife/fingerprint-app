@@ -129,9 +129,15 @@ public class FingerprintScanningEngine {
 
     /**
      * Scans a fingerprint using the given device, associating with the finger(s) of
-     * the given type
-     * type is String.valueOf(SGFingerPosition)
-     * viewNumber is the iteration of the fingerprint for the current scan session
+     * the given type<br>
+     * <br>
+     * <b>type</b> is the position of the finger e.g left middle finger, right index
+     * finger<br>
+     * A scan session is composed of 2-3 (configurable) scans of the same finger for
+     * maximum
+     * accuracy. <b>sessionId</b> is the id of such a session<br>
+     * <b>scanType</b> represents the purpose of the scan e.g registration, search,
+     * match<br>
      */
     public synchronized Fingerprint scanFingerprint(String type, String sessionId, ScanType scanType) {
         Fingerprint fp = new Fingerprint();
@@ -168,6 +174,7 @@ public class FingerprintScanningEngine {
             int impressionType = config.getImpressionType();
             log.debug("Capturing fingerprint...");
 
+            // Do the scan
             long res = client.GetImageEx(buffer, timeout, 0, targetQuality);
 
             if (res == SGFDxErrorCode.SGFDX_ERROR_NONE) {
@@ -179,7 +186,7 @@ public class FingerprintScanningEngine {
                 } else {
                     fingerInfo.FingerNumber = Helper.getFingerPosition(Integer.valueOf(type));
                 }
-                fingerInfo.ViewNumber = Integer.valueOf(viewNumber);
+                fingerInfo.ViewNumber = viewNumber;
                 fingerInfo.ImpressionType = Helper.getImpressionType(impressionType);
                 client.GetImageQuality(deviceInfo.imageWidth, deviceInfo.imageHeight, buffer,
                         actualQuality);
@@ -195,13 +202,13 @@ public class FingerprintScanningEngine {
                 long err = client.GetTemplateSize(buffer, maxTemplateSize);
                 err = client.GetMaxTemplateSize(maxTemplateSize);
                 if (err != SGFDxErrorCode.SGFDX_ERROR_NONE) {
-                    throw new BiometricServiceException("Error Getting Max Template Size");
+                    throw new BadScanException("Error Getting Max Template Size");
                 }
                 byte[] minBuffer = new byte[maxTemplateSize[0]];
                 log.debug("Extracting template...");
                 err = client.CreateTemplate(fingerInfo, buffer, minBuffer);
                 if (err != SGFDxErrorCode.SGFDX_ERROR_NONE) {
-                    throw new BiometricServiceException("Error Creating SG400 Fingerprint Template");
+                    throw new BadScanException("Error Creating SG400 Fingerprint Template");
                 }
 
                 // verify the print
@@ -321,18 +328,18 @@ public class FingerprintScanningEngine {
     }
 
     /**
-     * Ensures a list of possible disposable objects are disposed of
+     * Dispose client and device
      */
     private void dispose() {
         try {
-            if (client != null)
+            if (client != null) {
+                client.CloseDevice();
                 client.Close();
-            // if (deviceInfo != null)
-            // client.CloseDevice();
+            }
             client = null;
             deviceInfo = null;
         } catch (Exception e) {
-            log.error("Error disposing of biometric client/device");
+            log.error("Error disposing of biometric client/device: " + e.toString());
         }
     }
 }
