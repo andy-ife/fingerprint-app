@@ -28,7 +28,7 @@ public class ScanSessionManager {
 
     public BiometricScanSession getSession(String uuid) {
         Cache cache = cacheManager.getCache("scanSessionCache");
-        if (cache != null && uuid != null) {
+        if (cache != null && uuid != null && !uuid.equalsIgnoreCase("null")) {
             BiometricScanSession session = cache.get(uuid, BiometricScanSession.class);
             if (session != null) {
                 return session;

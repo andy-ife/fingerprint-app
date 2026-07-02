@@ -243,8 +243,8 @@ public class FingerprintScanningEngine {
                 fp.setType(type);
 
                 // update or destroy the session
-                if ((scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()
-                        || scanType == ScanType.SEARCH && viewNumber >= config.getScansSearchCount())) {
+                if (scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()
+                        || scanType == ScanType.SEARCH && viewNumber >= config.getScansSearchCount()) {
                     sessionManager.destroySession(sessionId);
                 } else {
                     session.addFingerprint(fp);
