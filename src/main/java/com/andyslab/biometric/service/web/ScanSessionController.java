@@ -25,7 +25,7 @@ public class ScanSessionController {
 
     @GetMapping
     @ResponseBody
-    public BiometricScanSession getSession(@RequestParam String uuid) {
+    public BiometricScanSession getSession(@RequestParam(required = false) String uuid) {
         return sessionManager.getSession(uuid);
     }
 

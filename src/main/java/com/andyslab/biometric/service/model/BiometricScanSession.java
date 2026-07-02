@@ -1,5 +1,6 @@
 package com.andyslab.biometric.service.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,9 +17,9 @@ public class BiometricScanSession {
         this.fingerprints = fingerprints;
     }
 
-    public BiometricScanSession(List<Fingerprint> fingerprints) {
-        this.uuid = UUID.randomUUID().toString();
-        this.fingerprints = fingerprints;
+    public BiometricScanSession(String uuid) {
+        this.uuid = uuid;
+        this.fingerprints = new ArrayList<Fingerprint>();
     }
 
     public String getUuid() {

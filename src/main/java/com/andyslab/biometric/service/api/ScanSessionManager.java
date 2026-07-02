@@ -1,18 +1,17 @@
 package com.andyslab.biometric.service.api;
 
-import java.util.ArrayList;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import com.andyslab.biometric.service.model.BiometricConfig;
 import com.andyslab.biometric.service.model.BiometricScanSession;
-import com.andyslab.biometric.service.model.Fingerprint;
 
 @Component
 public class ScanSessionManager {
@@ -27,9 +26,22 @@ public class ScanSessionManager {
         this.config = config;
     }
 
-    @Cacheable("scanSessionCache")
     public BiometricScanSession getSession(String uuid) {
-        return new BiometricScanSession(uuid, new ArrayList<Fingerprint>());
+        Cache cache = cacheManager.getCache("scanSessionCache");
+        if (cache != null && uuid != null) {
+            BiometricScanSession session = cache.get(uuid, BiometricScanSession.class);
+            if (session != null) {
+                return session;
+            }
+        }
+
+        BiometricScanSession newSession = new BiometricScanSession(UUID.randomUUID().toString());
+
+        if (cache != null) {
+            cache.put(newSession.getUuid(), newSession);
+        }
+
+        return newSession;
     }
 
     @CachePut(value = "scanSessionCache", key = "#session.uuid")
