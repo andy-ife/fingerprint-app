@@ -7,6 +7,7 @@ import java.util.UUID;
 public class BiometricScanSession {
     private String uuid;
     private List<Fingerprint> fingerprints;
+    private int maxCount;
 
     public BiometricScanSession(String uuid, List<Fingerprint> fingerprints) {
         if (uuid == null) {
@@ -41,4 +42,14 @@ public class BiometricScanSession {
     public void addFingerprint(Fingerprint fingerprint) {
         this.fingerprints.add(fingerprint);
     }
+
+    public int getMaxCount() {
+        return maxCount;
+    }
+
+    public void setMaxCount(int count) {
+        this.maxCount = count;
+    }
+
+    
 }

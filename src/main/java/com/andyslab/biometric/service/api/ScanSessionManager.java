@@ -41,6 +41,7 @@ public class ScanSessionManager {
             cache.put(newSession.getUuid(), newSession);
         }
 
+        newSession.setMaxCount(config.getScansRegistrationCount());
         return newSession;
     }
 
