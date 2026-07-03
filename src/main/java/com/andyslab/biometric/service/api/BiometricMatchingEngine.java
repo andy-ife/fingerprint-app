@@ -21,6 +21,7 @@ import com.andyslab.biometric.service.model.BiometricConfig;
 import com.andyslab.biometric.service.model.BiometricMatch;
 import com.andyslab.biometric.service.model.BiometricSubject;
 import com.andyslab.biometric.service.model.BiometricTemplateFormat;
+import com.andyslab.biometric.service.model.ScanType;
 import com.secugen.secusearch.api.SSCandidate;
 import com.secugen.secusearch.api.SSEngineParam;
 import com.secugen.secusearch.api.SSException;
@@ -147,7 +148,7 @@ public class BiometricMatchingEngine {
      *         along with information on the match quality
      * 
      */
-    public List<BiometricMatch> identify(BiometricSubject biometricSubject) {
+    public List<BiometricMatch> identify(BiometricSubject biometricSubject, ScanType type) {
         List<BiometricMatch> ret = new ArrayList<BiometricMatch>();
 
         if (biometricSubject.getFingerprints().isEmpty() || biometricSubject.getFingerprints().get(0) == null) {
@@ -170,6 +171,8 @@ public class BiometricMatchingEngine {
                                 candidate.getMatchScore(),
                                 candidate.getConfidenceLevel().level()));
                 }
+            } else if (type != null && type == ScanType.REGISTRATION) {
+                ret = new ArrayList<BiometricMatch>();
             } else {
                 log.debug("No match found");
                 throw new SubjectNotFoundException(biometricSubject.getSubjectId());

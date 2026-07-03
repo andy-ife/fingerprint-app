@@ -46,7 +46,7 @@ public class MatchController {
     public List<BiometricMatch> match(@RequestBody BiometricSubject subject) {
         List<BiometricMatch> matches = new ArrayList<>();
         if (subject != null) {
-            matches = engine.identify(subject);
+            matches = engine.identify(subject, null);
         }
         return matches;
     }

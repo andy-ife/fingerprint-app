@@ -31,6 +31,10 @@ public class BiometricSubject implements Serializable {
         this.subjectId = subjectId;
     }
 
+    public BiometricSubject(List<Fingerprint> fingerprints) {
+        this.fingerprints = fingerprints;
+    }
+
     public String getSubjectId() {
         return subjectId;
     }

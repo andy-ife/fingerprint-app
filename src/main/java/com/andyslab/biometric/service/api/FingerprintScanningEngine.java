@@ -24,10 +24,13 @@ import com.andyslab.biometric.service.exception.BadScanException;
 import com.andyslab.biometric.service.exception.BiometricServiceException;
 import com.andyslab.biometric.service.exception.DeviceNotFoundException;
 import com.andyslab.biometric.service.exception.DeviceTimeoutException;
+import com.andyslab.biometric.service.exception.DuplicateSubjectException;
 import com.andyslab.biometric.service.exception.ServiceNotEnabledException;
 import com.andyslab.biometric.service.model.BiometricConfig;
+import com.andyslab.biometric.service.model.BiometricMatch;
 import com.andyslab.biometric.service.model.BiometricScanSession;
 import com.andyslab.biometric.service.model.BiometricScanner;
+import com.andyslab.biometric.service.model.BiometricSubject;
 import com.andyslab.biometric.service.model.Fingerprint;
 import com.andyslab.biometric.service.model.ScanType;
 
@@ -47,13 +50,18 @@ public class FingerprintScanningEngine {
 
     final BiometricConfig config;
     final ScanSessionManager sessionManager;
+    final BiometricMatchingEngine matchingEngine;
 
     static private JSGFPLib client = null;
-    private SGDeviceInfoParam deviceInfo = null;
+    static private SGDeviceInfoParam deviceInfo = null;
 
-    FingerprintScanningEngine(BiometricConfig config, ScanSessionManager manager) {
+    FingerprintScanningEngine(
+            BiometricConfig config,
+            ScanSessionManager manager,
+            BiometricMatchingEngine matchingEngine) {
         this.config = config;
         this.sessionManager = manager;
+        this.matchingEngine = matchingEngine;
     }
 
     @PostConstruct
@@ -194,7 +202,7 @@ public class FingerprintScanningEngine {
 
                 // If quality is too low, scan again
                 if (fingerInfo.ImageQuality < targetQuality) {
-                    throw new BadScanException("Scan quality is too low. Please try again");
+                    throw new BadScanException("Poor scan detected. Please adjust your finger's position");
                 }
                 log.debug("Fingerprint captured successfully...");
 
@@ -231,7 +239,8 @@ public class FingerprintScanningEngine {
                 }
 
                 if (!matched) {
-                    throw new BadScanException("Poor scan detected. Please adjust your finger's position");
+                    throw new BadScanException(
+                            "This fingerprint does not match the others. Please adjust your finger's position");
                 }
 
                 // Create Fingerprint model
@@ -241,6 +250,13 @@ public class FingerprintScanningEngine {
                 fp.setImage(b64Image);
                 fp.setFormat(config.getTemplateFormat());
                 fp.setType(type);
+
+                // if we're registering, check that the print doesn't exist
+                if (scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()) {
+                    List<BiometricMatch> existingMatches = matchingEngine.identify(new BiometricSubject(), scanType);
+                    if (!existingMatches.isEmpty())
+                        throw new DuplicateSubjectException("");
+                }
 
                 // update or destroy the session
                 if (scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()
