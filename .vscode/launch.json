@@ -9,7 +9,7 @@
             "name": "BiometricService",
             "request": "launch",
             "mainClass": "com.andyslab.biometric.service.BiometricService",
-            "projectName": "sierra-leone-biometrics",
+            "projectName": "fingerprint-app",
             "args": "--spring.config.location=file:.\\config\\application.yml",
         }
     ]
