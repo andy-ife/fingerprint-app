@@ -15,6 +15,7 @@ package com.andyslab.biometric.service.model;
 public class Fingerprint extends BiometricSample {
 
     private String image;
+    private Integer quality;
 
     public Fingerprint() {
     }
@@ -40,5 +41,13 @@ public class Fingerprint extends BiometricSample {
         if (image == null)
             return;
         this.image = image;
+    }
+
+    public Integer getQuality() {
+        return quality;
+    }
+
+    public void setQuality(Integer quality) {
+        this.quality = quality;
     }
 }

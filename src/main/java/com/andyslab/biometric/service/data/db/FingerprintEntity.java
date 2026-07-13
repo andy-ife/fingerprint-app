@@ -38,6 +38,9 @@ public class FingerprintEntity {
     @Column(name = "format")
     private BiometricTemplateFormat format;
 
+    @Column(name = "quality")
+    private Integer quality;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "biometric_subject_id")
     private BiometricSubjectEntity biometricSubject;
@@ -109,6 +112,14 @@ public class FingerprintEntity {
 
     public void setBiometricSubject(BiometricSubjectEntity subject) {
         this.biometricSubject = subject;
+    }
+
+    public Integer getQuality() {
+        return quality;
+    }
+
+    public void setQuality(Integer quality) {
+        this.quality = quality;
     }
 
     @Override
