@@ -9,7 +9,6 @@
  */
 package com.andyslab.biometric.service;
 
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,7 +28,7 @@ import java.util.List;
  * currently causes a core dump involving a usb library, assumedly, because it
  * doesn't have any USB ports)
  **/
-//@Ignore
+// @Ignore
 public class BiometricScanningEngineTest extends BaseBiometricTest {
 
     @Autowired
@@ -51,8 +50,8 @@ public class BiometricScanningEngineTest extends BaseBiometricTest {
 
         BiometricSubject subject = new BiometricSubject();
         subject.addFingerprint(scanningEngine.scanFingerprint());
-        List<BiometricMatch> matches = matchingEngine.identify(subject);
-        System.out.println("Matched: " + matches);
+        // List<BiometricMatch> matches = matchingEngine.identify(subject);
+        // System.out.println("Matched: " + matches);
     }
 
     @Test
@@ -69,12 +68,12 @@ public class BiometricScanningEngineTest extends BaseBiometricTest {
 
         BiometricSubject id1 = new BiometricSubject();
         id1.addFingerprint(scan1);
-        List<BiometricMatch> matches1 = matchingEngine.identify(id1);
-        System.out.println("Matched scan 1: " + matches1);
+        // List<BiometricMatch> matches1 = matchingEngine.identify(id1);
+        // System.out.println("Matched scan 1: " + matches1);
 
         BiometricSubject id2 = new BiometricSubject();
         id2.addFingerprint(scan2);
-        List<BiometricMatch> matches2 = matchingEngine.identify(id2);
-        System.out.println("Matched scan 2: " + matches2);
+        // List<BiometricMatch> matches2 = matchingEngine.identify(id2);
+        // System.out.println("Matched scan 2: " + matches2);
     }
 }
