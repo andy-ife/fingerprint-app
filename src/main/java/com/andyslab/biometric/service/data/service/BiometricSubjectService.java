@@ -109,6 +109,8 @@ public class BiometricSubjectService {
 
     // Mappers
     private BiometricSubject mapToModel(BiometricSubjectEntity entity) {
+        if (entity == null)
+            return null;
         BiometricSubject subject = new BiometricSubject(entity.getSubjectId());
         if (entity.getFingerprints() != null) {
             for (FingerprintEntity fpEntity : entity.getFingerprints()) {
@@ -124,6 +126,8 @@ public class BiometricSubjectService {
     }
 
     private BiometricSubjectEntity mapToEntity(BiometricSubject subject) {
+        if (subject == null)
+            return null;
         BiometricSubjectEntity entity = new BiometricSubjectEntity(subject.getSubjectId());
         if (subject.getFingerprints() != null) {
             for (Fingerprint fingerprint : subject.getFingerprints()) {

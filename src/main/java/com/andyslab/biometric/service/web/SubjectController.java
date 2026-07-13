@@ -83,9 +83,6 @@ public class SubjectController {
     @ResponseBody
     public BiometricSubject createOrUpdate(@PathVariable String subjectId) {
         BiometricSubject subject = engine.getSubject(subjectId);
-        if (subject == null) {
-            throw new SubjectNotFoundException(subjectId);
-        }
         return subject;
     }
 
