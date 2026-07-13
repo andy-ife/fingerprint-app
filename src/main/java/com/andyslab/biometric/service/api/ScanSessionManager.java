@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import com.andyslab.biometric.service.model.BiometricConfig;
 import com.andyslab.biometric.service.model.BiometricScanSession;
+import com.andyslab.biometric.service.model.ScanType;
 
 @Component
 public class ScanSessionManager {
@@ -26,7 +27,7 @@ public class ScanSessionManager {
         this.config = config;
     }
 
-    public BiometricScanSession getSession(String uuid) {
+    public BiometricScanSession getSession(String uuid, ScanType scanType) {
         Cache cache = cacheManager.getCache("scanSessionCache");
         if (cache != null && uuid != null && !uuid.equalsIgnoreCase("null")) {
             BiometricScanSession session = cache.get(uuid, BiometricScanSession.class);
@@ -41,7 +42,8 @@ public class ScanSessionManager {
             cache.put(newSession.getUuid(), newSession);
         }
 
-        newSession.setMaxCount(config.getScansRegistrationCount());
+        newSession.setMaxCount(
+                scanType == ScanType.REGISTRATION ? config.getScansRegistrationCount() : config.getScansSearchCount());
         return newSession;
     }
 

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.andyslab.biometric.service.api.ScanSessionManager;
 import com.andyslab.biometric.service.model.BiometricScanSession;
+import com.andyslab.biometric.service.model.ScanType;
+
 import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
@@ -25,8 +27,8 @@ public class ScanSessionController {
 
     @GetMapping
     @ResponseBody
-    public BiometricScanSession getSession(@RequestParam(required = false) String uuid) {
-        return sessionManager.getSession(uuid);
+    public BiometricScanSession getSession(@RequestParam(required = false) String uuid, ScanType scanType) {
+        return sessionManager.getSession(uuid, scanType);
     }
 
     @PostMapping
