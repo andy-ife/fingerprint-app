@@ -43,7 +43,7 @@ public class ScanSessionManager {
         }
 
         newSession.setMaxCount(
-                scanType == ScanType.REGISTRATION ? config.getScansRegistrationCount() : config.getScansSearchCount());
+                scanType == ScanType.SEARCH ? config.getScansSearchCount() : config.getScansRegistrationCount());
         return newSession;
     }
 

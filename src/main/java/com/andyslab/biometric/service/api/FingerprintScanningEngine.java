@@ -166,8 +166,8 @@ public class FingerprintScanningEngine {
 
         // Check for existing sessions
         int viewNumber = 0;
-        int maxSize = scanType == ScanType.REGISTRATION ? config.getScansRegistrationCount()
-                : config.getScansSearchCount();
+        int maxSize = scanType == ScanType.SEARCH ? config.getScansSearchCount()
+                : config.getScansRegistrationCount();
         BiometricScanSession session = sessionManager.getSession(sessionId, scanType);
         if (session != null && session.getFingerprints() != null && session.getFingerprints().size() < maxSize) {
             viewNumber = session.getFingerprints().size() + 1;
@@ -205,6 +205,7 @@ public class FingerprintScanningEngine {
 
                 // If quality is too low, scan again
                 if (fingerInfo.ImageQuality < targetQuality) {
+                    System.out.println(fingerInfo.ImageQuality);
                     throw new BadScanException("Poor scan detected. Please adjust your finger's position");
                 }
                 log.debug("Fingerprint captured successfully...");
@@ -257,8 +258,8 @@ public class FingerprintScanningEngine {
                 fp.setType(type);
                 fp.setQuality(actualQuality[0]);
 
-                // if we're registering, check that the print doesn't exist
-                if (scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()) {
+                // if we're registering or editing, check that the print doesn't exist
+                if (scanType != ScanType.SEARCH && viewNumber >= config.getScansRegistrationCount()) {
                     List<Fingerprint> options = session.getFingerprints();
                     options.add(fp);
                     Fingerprint best = Helper.getBestFingerprint(options);
@@ -269,7 +270,8 @@ public class FingerprintScanningEngine {
                 }
 
                 // update or destroy the session
-                if (scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()
+                if ((scanType == ScanType.REGISTRATION || scanType == ScanType.EDIT)
+                        && viewNumber >= config.getScansRegistrationCount()
                         || scanType == ScanType.SEARCH && viewNumber >= config.getScansSearchCount()) {
                     sessionManager.destroySession(sessionId);
                 } else {
