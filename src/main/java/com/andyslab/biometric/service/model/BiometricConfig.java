@@ -46,6 +46,7 @@ public class BiometricConfig implements Serializable {
     private String sqliteDatabasePath;
 
     private Integer ajpPort;
+    private boolean production;
 
     // ***** PROPERTY ACCESS *****
 
@@ -178,6 +179,14 @@ public class BiometricConfig implements Serializable {
 
     public void setScanSessionTimeoutMs(Integer scanSessionTimeoutMs) {
         this.scanSessionTimeoutMs = scanSessionTimeoutMs;
+    }
+
+    public boolean isProduction() {
+        return production;
+    }
+
+    public void setProduction(boolean production) {
+        this.production = production;
     }
 
 }

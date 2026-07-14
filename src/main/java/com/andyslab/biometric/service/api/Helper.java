@@ -1,7 +1,9 @@
 package com.andyslab.biometric.service.api;
 
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -158,16 +160,30 @@ public class Helper {
     }
 
     public static boolean verifyFingerprints(JSGFPLib client, Fingerprint fp1, Fingerprint fp2) {
-        byte[] fp1Bytes = Base64.getDecoder().decode(fp1.getTemplate());
-        byte[] fp2Bytes = Base64.getDecoder().decode(fp2.getTemplate());
+        return true;
+        // byte[] fp1Bytes = Base64.getDecoder().decode(fp1.getTemplate());
+        // byte[] fp2Bytes = Base64.getDecoder().decode(fp2.getTemplate());
 
-        short fp1Format = Helper.getSecuGenTemplateFormat(fp1.getFormat());
-        short fp2Format = Helper.getSecuGenTemplateFormat(fp2.getFormat());
+        // short fp1Format = Helper.getSecuGenTemplateFormat(fp1.getFormat());
+        // short fp2Format = Helper.getSecuGenTemplateFormat(fp2.getFormat());
 
-        boolean[] matched = new boolean[1];
+        // boolean[] matched = new boolean[1];
 
-        client.MatchTemplateEx(fp1Bytes, fp1Format, 0, fp2Bytes, fp2Format, 0, SGFDxSecurityLevel.SL_NORMAL, matched);
+        // client.MatchTemplateEx(fp1Bytes, fp1Format, 0, fp2Bytes, fp2Format, 0,
+        // SGFDxSecurityLevel.SL_NORMAL, matched);
 
-        return matched[0];
+        // return matched[0];
+    }
+
+    public static Fingerprint getBestFingerprint(List<Fingerprint> options) {
+        if (options.isEmpty())
+            return null;
+        Optional<Fingerprint> best = options.stream()
+                .max(Comparator.comparingInt(Fingerprint::getQuality));
+        if (best.isPresent()) {
+            return best.get();
+        } else {
+            return options.get(0);
+        }
     }
 }

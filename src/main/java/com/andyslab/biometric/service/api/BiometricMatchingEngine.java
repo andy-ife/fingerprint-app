@@ -151,6 +151,9 @@ public class BiometricMatchingEngine {
     public List<BiometricMatch> identify(BiometricSubject biometricSubject, ScanType type) {
         List<BiometricMatch> ret = new ArrayList<BiometricMatch>();
 
+        if (!config.isProduction())
+            return ret;
+
         if (biometricSubject.getFingerprints().isEmpty() || biometricSubject.getFingerprints().get(0) == null) {
             throw new BiometricServiceException("We can't match this subject because no fingerprints were provided");
         }
