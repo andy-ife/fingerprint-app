@@ -1,7 +1,9 @@
 package com.andyslab.biometric.service.api;
 
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -169,5 +171,17 @@ public class Helper {
         client.MatchTemplateEx(fp1Bytes, fp1Format, 0, fp2Bytes, fp2Format, 0, SGFDxSecurityLevel.SL_NORMAL, matched);
 
         return matched[0];
+    }
+
+    public static Fingerprint getBestFingerprint(List<Fingerprint> options) {
+        if (options.isEmpty())
+            return null;
+        Optional<Fingerprint> best = options.stream()
+                .max(Comparator.comparingInt(Fingerprint::getQuality));
+        if (best.isPresent()) {
+            return best.get();
+        } else {
+            return options.get(0);
+        }
     }
 }

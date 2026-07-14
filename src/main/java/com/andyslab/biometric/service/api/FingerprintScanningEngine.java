@@ -37,6 +37,7 @@ import com.andyslab.biometric.service.model.ScanType;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 
@@ -164,9 +165,11 @@ public class FingerprintScanningEngine {
         }
 
         // Check for existing sessions
-        int viewNumber = 1;
-        BiometricScanSession session = sessionManager.getSession(sessionId);
-        if (session != null && session.getFingerprints() != null && session.getFingerprints().size() < 3) {
+        int viewNumber = 0;
+        int maxSize = scanType == ScanType.REGISTRATION ? config.getScansRegistrationCount()
+                : config.getScansSearchCount();
+        BiometricScanSession session = sessionManager.getSession(sessionId, scanType);
+        if (session != null && session.getFingerprints() != null && session.getFingerprints().size() < maxSize) {
             viewNumber = session.getFingerprints().size() + 1;
         }
 
@@ -236,6 +239,8 @@ public class FingerprintScanningEngine {
                     // match 1 and cur
                     boolean match1 = Helper.verifyFingerprints(client, prevFp1, cur);
                     matched = match1;
+                } else {
+                    matched = true;
                 }
 
                 if (!matched) {
@@ -250,10 +255,15 @@ public class FingerprintScanningEngine {
                 fp.setImage(b64Image);
                 fp.setFormat(config.getTemplateFormat());
                 fp.setType(type);
+                fp.setQuality(actualQuality[0]);
 
                 // if we're registering, check that the print doesn't exist
                 if (scanType == ScanType.REGISTRATION && viewNumber >= config.getScansRegistrationCount()) {
-                    List<BiometricMatch> existingMatches = matchingEngine.identify(new BiometricSubject(), scanType);
+                    List<Fingerprint> options = session.getFingerprints();
+                    options.add(fp);
+                    Fingerprint best = Helper.getBestFingerprint(options);
+                    List<BiometricMatch> existingMatches = matchingEngine
+                            .identify(new BiometricSubject(new ArrayList<Fingerprint>(Arrays.asList(best))), scanType);
                     if (!existingMatches.isEmpty())
                         throw new DuplicateSubjectException("");
                 }
