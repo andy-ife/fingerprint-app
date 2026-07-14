@@ -171,7 +171,7 @@ public class BiometricMatchingEngine {
                                 candidate.getMatchScore(),
                                 candidate.getConfidenceLevel().level()));
                 }
-            } else if (type != null && type == ScanType.REGISTRATION) {
+            } else if (type != null && type != ScanType.SEARCH) {
                 ret = new ArrayList<BiometricMatch>();
             } else {
                 log.debug("No match found");
